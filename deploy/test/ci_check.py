@@ -37,7 +37,7 @@ def main():
             subprocess.run(dc+['exec','-T','app','python','/usr/local/bin/odoo-smoke.py','crm'],check=True)
             fixture=b"""import base64
 lead=env['crm.lead'].create({'name':'CI_PERSISTENCE_PROOF'})
-env['ir.config_parameter'].sudo().set_param('odoo20.ci.setting','preserved')
+env['ir.config_parameter'].sudo().set_str('odoo20.ci.setting','preserved')
 env['ir.attachment'].create({'name':'ci-proof.txt','res_model':'crm.lead','res_id':lead.id,'datas':base64.b64encode(b'preserved attachment')})
 env.cr.commit()
 """
@@ -63,7 +63,7 @@ env.cr.commit()
             restored=controller.new_record(image,args.commit,upgrade=['crm'],label='ci-restore')
             controller.restore_new(restored,str(snapshot));controller.upgrade(restored,neutralize=True)
             controller.dc(restored,'exec','-T','app','python','/opt/odoo/odoo-bin','shell','-c','/tmp/odoo.conf','--no-http',
-                stdin=b"assert env['ir.config_parameter'].sudo().get_param('odoo20.ci.setting')=='preserved'; assert env['crm.lead'].search_count([('name','=','CI_PERSISTENCE_PROOF')])==1; print('Settings and CRM restore verified')")
+                stdin=b"assert env['ir.config_parameter'].sudo().get_str('odoo20.ci.setting')=='preserved'; assert env['crm.lead'].search_count([('name','=','CI_PERSISTENCE_PROOF')])==1; print('Settings and CRM restore verified')")
         finally:
             if restored:
                 assert pathlib.Path(restored['directory']).is_relative_to(work/'releases')
