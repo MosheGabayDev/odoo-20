@@ -2,3 +2,5 @@
 secrets/
 backups/
 *.log
+*.local.json
+receipts/

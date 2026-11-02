@@ -205,6 +205,16 @@ class Controller:
 
     def running(self, record): return 'app' in self.dc(record,'ps','--status','running','--services').splitlines()
 
+    def data_signature(self, record):
+        query="""SELECT json_build_object(
+          'crm', (SELECT md5(coalesce(string_agg(row(id,name,type,user_id,team_id,company_id,active)::text, '|' ORDER BY id),'')) FROM crm_lead),
+          'users', (SELECT md5(coalesce(string_agg(row(id,login,active,company_id)::text, '|' ORDER BY id),'')) FROM res_users),
+          'companies', (SELECT md5(coalesce(string_agg(row(id,name,currency_id)::text, '|' ORDER BY id),'')) FROM res_company),
+          'attachments', (SELECT md5(coalesce(string_agg(row(id,res_model,res_id,store_fname,checksum)::text,'|' ORDER BY id),'')) FROM ir_attachment WHERE res_model NOT IN ('ir.ui.view','ir.asset') AND res_model IS NOT NULL),
+          'parameters', (SELECT md5(coalesce(string_agg(row(key,value)::text,'|' ORDER BY key),'')) FROM ir_config_parameter)
+        )::text"""
+        return json.loads(self.dc(record,'exec','-T','db','psql','-U','postgres','-d','odoo20','-Atc',query))
+
     def snapshot(self, record, *, keep_stopped=False):
         """Freeze app; capture DB + files + secrets; verify off-host uploads before success."""
         image_receipt=self.ensure_image_archive(record['image'])
@@ -215,6 +225,7 @@ class Controller:
         success=False
         try:
             self.dc(record,'stop','app')
+            signature=self.data_signature(record)
             with (directory/'database.dump').open('wb') as f:
                 self.dc(record,'exec','-T','db','pg_dump','-U','postgres','-Fc','odoo20',stdout=f)
             with (directory/'filestore.tar.gz').open('wb') as f:
@@ -230,7 +241,7 @@ class Controller:
             with tarfile.open(directory/'secrets.tar.gz','w:gz') as tar:
                 source=Path(self.cfg['secrets']) if record.get('legacy') else self.path(record)/'secrets'
                 for name in SECRETS: tar.add(source/name,arcname=name,recursive=False)
-            manifest={'id':ident,'record':record,'image_archive':image_receipt,'files':{n:digest(directory/n) for n in
+            manifest={'id':ident,'record':record,'data_signature':signature,'image_archive':image_receipt,'files':{n:digest(directory/n) for n in
                 ('database.dump','filestore.tar.gz','secrets.tar.gz')},'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
             atomic(directory/'manifest.json',manifest)
             uri=self.cfg['backup_uri']+'/snapshots/'+ident
@@ -286,7 +297,7 @@ class Controller:
         raise RuntimeError('Readiness timeout for '+service)
 
     def restore_new(self, record, snapshot):
-        self.snapshot_data(snapshot)
+        manifest=self.snapshot_data(snapshot)
         path=self.path(record)
         require(not (path/'restore-started.json').exists(),'Never restore over an existing release; allocate a fresh release')
         atomic(path/'restore-started.json',{'snapshot':snapshot})
@@ -300,6 +311,7 @@ class Controller:
                 'exec','-T','db','pg_restore','-U','postgres','--role=odoo','-d','odoo20','--exit-on-error','--no-owner','--no-acl'],
                 stdin=f,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=300)
         require(result.returncode==0,'Database restore failed; retain private release for inspection')
+        require(self.data_signature(record)==manifest['data_signature'],'Restored business/configuration data mismatch')
         volume=record['project']+'_filestore'
         self.dc(record,'create','--no-deps','app')
         validate_archive(Path(snapshot)/'filestore.tar.gz',Path('/restore'))
@@ -334,7 +346,12 @@ class Controller:
         if record['install']:self.maintenance(record,'install',record['install'])
         if record['upgrade']:self.maintenance(record,'upgrade',record['upgrade'])
         if tests and record['test']:self.maintenance(record,'test',record['test'])
-        return self.smoke(record)
+        result=self.smoke(record)
+        original=self.snapshot_data(record['snapshot'])['data_signature']
+        actual=self.data_signature(record)
+        for name in ('crm','users','companies','attachments'):
+            require(actual[name]==original[name],'Business data changed during upgrade: '+name+'; review migration explicitly')
+        return result
 
     def build(self, source):
         require(SHA.fullmatch(source),'Supply the complete 40-character GitHub commit SHA')
@@ -419,7 +436,22 @@ class Controller:
     def promote(self, ident, *, fail=False):
         candidate=self.record(ident)
         require(candidate['status']=='prepared','Only a verified prepared candidate can be promoted')
+        self.ci_success(candidate['source'])
         return self.cutover(candidate,fail_before_exposure=fail)
+
+    def ci_success(self, source):
+        import urllib.request
+        require(SHA.fullmatch(source),'Invalid CI source SHA')
+        request=urllib.request.Request('https://api.github.com/repos/MosheGabayDev/odoo-20/actions/runs?head_sha='+source+'&per_page=50',
+            headers={'Accept':'application/vnd.github+json','User-Agent':'odoo20-test-release'})
+        with urllib.request.urlopen(request,timeout=20) as response: payload=json.load(response)
+        runs=[r for r in payload['workflow_runs'] if r['head_sha']==source
+              and r['name']=='Odoo TEST release checks' and r['path']=='.github/workflows/odoo-test-ci.yml'
+              and r['event'] in ('push','workflow_dispatch')]
+        require(runs,'No GitHub CI evidence for this exact commit')
+        latest=max(runs,key=lambda r:r['id'])
+        require(latest['status']=='completed' and latest['conclusion']=='success','GitHub CI must pass for this exact commit before promotion')
+        return latest['html_url']
 
     def rollback(self, acknowledge):
         current=self.current()
