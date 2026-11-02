@@ -75,8 +75,18 @@ def validate_archive(archive, target, *, names=None):
 
 def unpack(archive, target, *, names=None):
     validate_archive(archive,target,names=names)
+    target=Path(target)
     with tarfile.open(archive,'r:gz') as tar:
-        tar.extractall(target,filter='data')
+        # Debian 12's Python 3.11.2 predates extractall(filter=...). Only ordinary
+        # validated files/directories are copied; archive ownership/modes are ignored.
+        for member in tar.getmembers():
+            path=target/member.name
+            if member.isdir():path.mkdir(parents=True,exist_ok=True,mode=0o700)
+            else:
+                path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+                with tar.extractfile(member) as source,path.open('xb') as destination:
+                    shutil.copyfileobj(source,destination)
+                path.chmod(0o600)
 
 def compose_document(project, image, pg_image, secrets, init_script, preview=True, port=None):
     require(re.fullmatch(r'odoo20-[a-z0-9-]+',project),'Invalid project name')
@@ -146,6 +156,9 @@ class Controller:
         return load(self.root/'releases'/ident/'release.json')
 
     def save(self, record): atomic(self.path(record)/'release.json',record)
+    def stop_allocated(self, record):
+        # A power failure can occur after journaling intent but before creating a Compose file.
+        if (self.path(record)/record['compose']).is_file(): self.dc(record,'stop','app','db')
     def clean_journal(self):
         if self.journal_path.exists():
             require(load(self.journal_path).get('phase') in ('complete','recovered'),
@@ -383,14 +396,14 @@ class Controller:
         self.ensure_image_archive(image)
         snapshot=self.snapshot(self.current())
         candidate=self.new_record(image,source,upgrade,install,tests,label='candidate')
-        self.restore_new(candidate,snapshot)
         try:
+            self.restore_new(candidate,snapshot)
             self.upgrade(candidate,neutralize=True,tests=True)
             candidate['status']='prepared';candidate['base_id']=self.current()['id'];self.save(candidate)
             self.check_platform(protected)
             return candidate
         finally:
-            self.dc(candidate,'stop','app','db')
+            self.stop_allocated(candidate)
 
     def cutover(self, template, *, frozen_snapshot=None, fail_before_exposure=False):
         self.clean_journal();self.guards()
@@ -425,7 +438,7 @@ class Controller:
             return next_record
         except Exception:
             if not exposed:
-                self.dc(next_record,'stop','app','db')
+                self.stop_allocated(next_record)
                 atomic(self.state_path,journal['state_before'])
                 self.dc(previous,'start','app')
                 self.wait(previous,'app')
@@ -477,7 +490,7 @@ class Controller:
             require(current['id']==journal['next']['id'],'Unexpected current release; inspect manually')
             self.dc(current,'up','-d','app');self.wait(current,'app');self.smoke(current)
         else:
-            self.dc(journal['next'],'stop','app','db')
+            self.stop_allocated(journal['next'])
             if 'state_before' in journal: atomic(self.state_path,journal['state_before'])
             self.dc(journal['previous'],'start','app');self.wait(journal['previous'],'app')
         journal['phase']='recovered';atomic(self.journal_path,journal)

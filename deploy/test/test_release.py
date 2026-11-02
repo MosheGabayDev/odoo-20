@@ -55,6 +55,15 @@ class SafetyTests(unittest.TestCase):
                     tar.addfile(item,io.BytesIO())
                 with self.assertRaises(RuntimeError):r.unpack(archive,Path(folder)/'target')
 
+    def test_valid_secret_archive_restores_without_extractall_version_dependency(self):
+        with tempfile.TemporaryDirectory() as folder:
+            archive=Path(folder)/'secret.tar.gz'
+            with tarfile.open(archive,'w:gz') as tar:
+                item=tarfile.TarInfo('odoo_db_password');item.size=5;tar.addfile(item,io.BytesIO(b'VALUE'))
+            destination=Path(folder)/'target';destination.mkdir()
+            r.unpack(archive,destination,names={'odoo_db_password'})
+            self.assertEqual((destination/'odoo_db_password').read_bytes(),b'VALUE')
+
     def test_atomic_state_and_manifest_tamper(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'state.json';r.atomic(path,{'current':'old'});r.atomic(path,{'current':'new'})
@@ -100,9 +109,16 @@ class SafetyTests(unittest.TestCase):
             controller=object.__new__(r.Controller);controller.journal_path=Path(folder)/'journal.json'
             next_record={'id':'new'};old={'id':'old'}
             r.atomic(controller.journal_path,{'phase':'private_validation','next':next_record,'previous':old})
-            controller.dc=Mock();controller.wait=Mock()
+            controller.dc=Mock();controller.wait=Mock();controller.stop_allocated=Mock()
             controller.recover()
-            controller.dc.assert_any_call(next_record,'stop','app','db')
+            controller.stop_allocated.assert_called_once_with(next_record)
             controller.dc.assert_any_call(old,'start','app')
+
+    def test_crash_before_compose_allocation_does_not_prevent_recovery(self):
+        with tempfile.TemporaryDirectory() as folder:
+            controller=object.__new__(r.Controller);controller.root=Path(folder);controller.dc=Mock()
+            record={'directory':folder,'project':'odoo20-unit','compose':'not-created.json'}
+            controller.stop_allocated(record)
+            controller.dc.assert_not_called()
 
 if __name__=='__main__':unittest.main()
