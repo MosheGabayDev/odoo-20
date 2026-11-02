@@ -1,0 +1,9 @@
+secrets
+backups
+.env
+*.log
+*.json
+*.txt
+deployment.sha256
+initialization-*
+.git
