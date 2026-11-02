@@ -116,6 +116,6 @@ print('CRM record, setting and attachment persisted')
     finally:
         for path in (root/'releases').glob('*/release.json'):
             record=load(path)
-            try:c.dc(record,'stop','app','db')
+            try:c.stop_allocated(record)
             except Exception:pass
         # Retain volumes, failed releases and off-host backups. No destructive cleanup.

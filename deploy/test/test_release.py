@@ -140,4 +140,12 @@ class SafetyTests(unittest.TestCase):
             controller.stop_allocated(record)
             controller.dc.assert_not_called()
 
+    def test_retiring_runtime_preserves_named_volumes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            controller=object.__new__(r.Controller);controller.root=Path(folder);controller.dc=Mock()
+            (Path(folder)/'compose.json').write_text('{}')
+            record={'directory':folder,'project':'odoo20-unit','compose':'compose.json'}
+            controller.stop_allocated(record)
+            controller.dc.assert_called_once_with(record,'down')
+
 if __name__=='__main__':unittest.main()

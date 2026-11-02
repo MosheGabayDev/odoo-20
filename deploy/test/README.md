@@ -62,7 +62,9 @@ restrictions, backend assets and disabled database management. Restored business
 and settings signatures must match before migration; selected CRM/user/company
 and business-attachment signatures must survive the module upgrade unchanged.
 Intentional business-data migrations therefore require a separate reviewed plan.
-Prepared preview containers are stopped after testing; their evidence is retained.
+Prepared preview containers and networks are removed after testing; named data
+volumes, immutable images, snapshots and evidence are retained. Retired releases
+are handled the same way after a successful cutover, preventing address-pool exhaustion.
 
 `promote` rejects a stale candidate, obtains the shared Platform deployment lock
 and the Odoo release/backup locks, checks the private host guard and protected

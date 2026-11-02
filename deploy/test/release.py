@@ -162,7 +162,8 @@ class Controller:
     def save(self, record): atomic(self.path(record)/'release.json',record)
     def stop_allocated(self, record):
         # A power failure can occur after journaling intent but before creating a Compose file.
-        if (self.path(record)/record['compose']).is_file(): self.dc(record,'stop','app','db')
+        # Remove only this project's runtime/network; never pass --volumes.
+        if (self.path(record)/record['compose']).is_file(): self.dc(record,'down')
     def clean_journal(self):
         if self.journal_path.exists():
             require(load(self.journal_path).get('phase') in ('complete','recovered'),
@@ -451,6 +452,9 @@ class Controller:
             journal['phase']='exposure_started';atomic(self.journal_path,journal);exposed=True
             self.dc(next_record,'up','-d','app');self.wait(next_record,'app');self.smoke(next_record)
             self.check_platform(protected)
+            # Rollback uses the matched snapshot and exact archived image. Keeping
+            # every stopped project's networks exhausts Docker's default pools.
+            self.stop_allocated(previous)
             journal['phase']='complete';atomic(self.journal_path,journal)
             return next_record
         except Exception:
