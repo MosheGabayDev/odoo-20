@@ -149,3 +149,13 @@ in an isolated rehearsal project.
 - [Official Docker Odoo persistence/addons/secrets](https://github.com/docker-library/docs/blob/master/odoo/content.md)
 
 These references inform the workflow; this server is self-hosted, not Odoo.sh.
+## Repeat the isolated acceptance rehearsal
+
+Install the tracked rehearse-pipeline.py next to the host controller. After one
+prepared candidate exists, run python3 /opt/odoo20-test/rehearse-pipeline.py.
+It creates unpublished sandbox projects and synthetic CRM/settings/attachment
+data. It exercises failed and successful cutover, actual app/PostgreSQL process
+crashes, recreation, targeted recovery, rollback refusal and acknowledged rollback,
+and restores the pre-rollback archive to prove later writes remain recoverable.
+It stops its sandbox containers and retains their data/evidence. It never reboots
+the host. Read pipeline-proof-result.json for the actual acceptance result.

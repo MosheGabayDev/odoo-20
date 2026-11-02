@@ -6,7 +6,9 @@ import secrets
 import subprocess
 import tempfile
 import uuid
-from release import compose_document
+import shutil
+import tarfile
+from release import compose_document, Controller, atomic, digest, SECRETS
 
 def run(*args):return subprocess.check_output(args,text=True).strip()
 
@@ -26,16 +28,46 @@ def main():
         config=work/'compose.json'
         config.write_text(json.dumps(compose_document(project,image,pg,secret_dir,root/'init-db.sh')))
         dc=['docker','compose','-p',project,'-f',str(config)]
+        restored=None
         try:
             subprocess.run(dc+['up','-d','--wait','db'],check=True)
             subprocess.run(dc+['run','--rm','--no-deps','-T','app','bootstrap'],check=True)
             subprocess.run(dc+['run','--rm','--no-deps','-T','app','upgrade','crm'],check=True)
             subprocess.run(dc+['up','-d','--wait','app'],check=True)
             subprocess.run(dc+['exec','-T','app','python','/usr/local/bin/odoo-smoke.py','crm'],check=True)
+            fixture=b"""import base64
+lead=env['crm.lead'].create({'name':'CI_PERSISTENCE_PROOF'})
+env['ir.config_parameter'].sudo().set_param('odoo20.ci.setting','preserved')
+env['ir.attachment'].create({'name':'ci-proof.txt','res_model':'crm.lead','res_id':lead.id,'datas':base64.b64encode(b'preserved attachment')})
+env.cr.commit()
+"""
+            subprocess.run(dc+['exec','-T','app','python','/opt/odoo/odoo-bin','shell','-c','/tmp/odoo.conf','--no-http'],input=fixture,check=True)
             # Recreate only disposable CI containers; named volumes and secrets must survive.
             subprocess.run(dc+['up','-d','--force-recreate','--wait','app'],check=True)
             subprocess.run(dc+['exec','-T','app','python','/usr/local/bin/odoo-smoke.py','crm'],check=True)
+            # Exercise the actual restore path without AWS using only disposable CI data.
+            controller=object.__new__(Controller)
+            controller.root=work;controller.cfg={'pg_image':pg,'secrets':str(secret_dir)}
+            shutil.copy2(root/'smoke.py',work/'smoke.py');shutil.copy2(root/'init-db.sh',work/'init-db.sh')
+            source={'directory':str(work),'compose':'compose.json','project':project,'image':image,'source':args.commit,'legacy':False}
+            subprocess.run(dc+['stop','app'],check=True)
+            snapshot=work/'snapshots'/'ci';snapshot.mkdir(parents=True)
+            for name,command in [('database.dump',['exec','-T','db','pg_dump','-U','postgres','-Fc','odoo20']),
+                                 ('filestore.tar.gz',['run','--rm','--no-deps','-T','--entrypoint','tar','app','-czf','-','-C','/var/lib/odoo','.'])]:
+                with (snapshot/name).open('wb') as output:subprocess.run(dc+command,stdout=output,check=True)
+            with tarfile.open(snapshot/'secrets.tar.gz','w:gz') as tar:
+                for name in SECRETS:tar.add(secret_dir/name,arcname=name)
+            atomic(snapshot/'manifest.json',{'record':source,'data_signature':controller.data_signature(source),
+                'files':{n:digest(snapshot/n) for n in ('database.dump','filestore.tar.gz','secrets.tar.gz')}})
+            atomic(snapshot/'complete.json',{'manifest_sha256':digest(snapshot/'manifest.json')})
+            restored=controller.new_record(image,args.commit,upgrade=['crm'],label='ci-restore')
+            controller.restore_new(restored,str(snapshot));controller.upgrade(restored,neutralize=True)
+            controller.dc(restored,'exec','-T','app','python','/opt/odoo/odoo-bin','shell','-c','/tmp/odoo.conf','--no-http',
+                stdin=b"assert env['ir.config_parameter'].sudo().get_param('odoo20.ci.setting')=='preserved'; assert env['crm.lead'].search_count([('name','=','CI_PERSISTENCE_PROOF')])==1; print('Settings and CRM restore verified')")
         finally:
+            if restored:
+                assert pathlib.Path(restored['directory']).is_relative_to(work/'releases')
+                controller.dc(restored,'down','--volumes')
             assert project.startswith('odoo20-ci-') and work.name.startswith('odoo20-ci-')
             subprocess.run(dc+['down','--volumes'],check=True)
 
