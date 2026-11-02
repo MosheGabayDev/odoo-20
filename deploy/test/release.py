@@ -51,9 +51,9 @@ def atomic(path, value):
 
 def load(path): return json.loads(Path(path).read_text())
 
-def run(args, *, cwd=None, stdin=None, stdout=None, timeout=1800):
+def run(args, *, cwd=None, stdin=None, stdout=None, timeout=1800, merge_error=False):
     result = subprocess.run([str(a) for a in args],cwd=cwd,input=stdin,
-        stdout=stdout or subprocess.PIPE,stderr=subprocess.STDOUT if stdout else subprocess.PIPE,timeout=timeout)
+        stdout=stdout or subprocess.PIPE,stderr=subprocess.STDOUT if merge_error else subprocess.PIPE,timeout=timeout)
     if result.returncode:
         # Runtime logs can contain business data. Keep output in root-only receipts, not exception text.
         if cwd:
@@ -328,7 +328,7 @@ class Controller:
         log=self.path(record)/(mode+'.log')
         previous_size=log.stat().st_size if log.exists() else 0
         with log.open('ab') as f:
-            self.dc(record,'run','--rm','--no-deps','-T','app',mode,*names,stdout=f,timeout=1800)
+            self.dc(record,'run','--rm','--no-deps','-T','app',mode,*names,stdout=f,timeout=1800,merge_error=True)
         if mode=='test':
             summaries=re.findall(rb'(\d+) failed, (\d+) error\(s\) of (\d+) tests',log.read_bytes()[previous_size:])
             require(summaries and any(int(n)>0 for _,_,n in summaries), 'No Odoo tests actually ran')
@@ -369,7 +369,7 @@ class Controller:
         tag='odoo20-release:'+source
         with (self.root/'build.log').open('ab') as f:
             run(['docker','build','--tag',tag,'--build-arg','ODOO_COMMIT='+source,
-                 '--build-arg','PYTHON_IMAGE='+self.cfg['python_image'],str(context)],cwd=self.root,stdout=f)
+                 '--build-arg','PYTHON_IMAGE='+self.cfg['python_image'],str(context)],cwd=self.root,stdout=f,merge_error=True)
         image=run(['docker','image','inspect',tag,'--format','{{.Id}}'])
         actual=run(['docker','run','--rm','--network','none','--entrypoint','cat',image,'/opt/odoo/SOURCE_COMMIT'])
         require(actual==source,'Built image source mismatch')

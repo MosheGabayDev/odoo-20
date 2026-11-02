@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import tarfile
 import tempfile
+import gzip
+import sys
 import unittest
 from unittest.mock import Mock, patch
 
@@ -11,6 +13,13 @@ spec=importlib.util.spec_from_file_location('release',Path(__file__).with_name('
 r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
 
 class SafetyTests(unittest.TestCase):
+    def test_backup_binary_stream_cannot_be_corrupted_by_compose_status_stderr(self):
+        with tempfile.TemporaryDirectory() as folder:
+            archive=Path(folder)/'archive.gz'
+            with archive.open('wb') as output:
+                r.run([sys.executable,'-c',"import sys,gzip; sys.stderr.write('Container creating\\n'); sys.stdout.buffer.write(gzip.compress(b'important-data'))"],stdout=output)
+            self.assertEqual(gzip.decompress(archive.read_bytes()),b'important-data')
+
     def test_rejects_shell_and_broad_module_names(self):
         for name in ('../crm','crm;id','all','base','crm,$(id)','CRM','--force'):
             with self.subTest(name=name),self.assertRaises(RuntimeError):r.modules(name)
