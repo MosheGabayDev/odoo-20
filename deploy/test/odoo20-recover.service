@@ -1,0 +1,14 @@
+[Unit]
+Description=Recover the persistent current Odoo TEST release after boot
+After=docker.service platform-web.service
+Requires=docker.service
+RequiresMountsFor=/opt/odoo20-test /var/lib/docker
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/odoo20-test/release.py recover
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=900
+[Install]
+WantedBy=multi-user.target

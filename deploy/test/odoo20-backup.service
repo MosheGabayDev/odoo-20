@@ -8,3 +8,5 @@ ExecStart=/bin/bash /opt/odoo20-test/backup.sh
 Nice=10
 IOSchedulingClass=idle
 TimeoutStartSec=1800
+Restart=on-failure
+RestartSec=900

@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
@@ -206,9 +207,11 @@ class Controller:
 
     def snapshot(self, record, *, keep_stopped=False):
         """Freeze app; capture DB + files + secrets; verify off-host uploads before success."""
+        image_receipt=self.ensure_image_archive(record['image'])
         ident=dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:6]
         directory=self.root/'snapshots'/ident;directory.mkdir(parents=True,mode=0o700)
         was_running=self.running(record)
+        atomic(self.root/'backup-transaction.json',{'phase':'freezing','record':record,'was_running':was_running})
         success=False
         try:
             self.dc(record,'stop','app')
@@ -227,7 +230,7 @@ class Controller:
             with tarfile.open(directory/'secrets.tar.gz','w:gz') as tar:
                 source=Path(self.cfg['secrets']) if record.get('legacy') else self.path(record)/'secrets'
                 for name in SECRETS: tar.add(source/name,arcname=name,recursive=False)
-            manifest={'id':ident,'record':record,'files':{n:digest(directory/n) for n in
+            manifest={'id':ident,'record':record,'image_archive':image_receipt,'files':{n:digest(directory/n) for n in
                 ('database.dump','filestore.tar.gz','secrets.tar.gz')},'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
             atomic(directory/'manifest.json',manifest)
             uri=self.cfg['backup_uri']+'/snapshots/'+ident
@@ -238,11 +241,15 @@ class Controller:
                 head=json.loads(run(['aws','s3api','head-object','--bucket',bucket,'--key',key,
                     '--query','{size:ContentLength,encryption:ServerSideEncryption}','--output','json'],cwd=directory))
                 require(head['size']==(directory/name).stat().st_size and head['encryption']=='aws:kms','Off-host backup verification failed')
-            atomic(directory/'complete.json',{'uri':uri,'manifest_sha256':digest(directory/'manifest.json')})
+            receipt={'uri':uri,'manifest_sha256':digest(directory/'manifest.json')}
+            atomic(directory/'complete.pending',receipt)
+            run(['aws','s3','cp',str(directory/'complete.pending'),uri+'/complete.json','--sse','aws:kms','--only-show-errors'],cwd=directory)
+            atomic(directory/'complete.json',receipt)
             success=True
             return str(directory)
         finally:
             if was_running and (not keep_stopped or not success): self.dc(record,'start','app')
+            atomic(self.root/'backup-transaction.json',{'phase':'complete','record':record,'was_running':was_running})
 
     def snapshot_data(self, path):
         path=Path(path).resolve()
@@ -375,7 +382,7 @@ class Controller:
         next_record=self.new_record(template['image'],template['source'],template.get('upgrade',[]),template.get('install',[]),template.get('test',[]))
         next_record['required']=template.get('required',next_record['required'])
         self.save(next_record)
-        journal={'phase':'freezing','previous':previous,'next':next_record,'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
+        journal={'phase':'freezing','previous':previous,'next':next_record,'state_before':self.state(),'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
         atomic(self.journal_path,journal)
         exposed=False
         try:
@@ -392,6 +399,7 @@ class Controller:
             self.save(next_record)
             state=self.state();state['history'].append(previous);state['current']=next_record
             # Persist the desired current before exposure. After this boundary never discard writes automatically.
+            journal['phase']='commit_pending';atomic(self.journal_path,journal)
             atomic(self.state_path,state)
             journal['phase']='exposure_started';atomic(self.journal_path,journal);exposed=True
             self.dc(next_record,'up','-d','app');self.wait(next_record,'app');self.smoke(next_record)
@@ -401,6 +409,7 @@ class Controller:
         except Exception:
             if not exposed:
                 self.dc(next_record,'stop','app','db')
+                atomic(self.state_path,journal['state_before'])
                 self.dc(previous,'start','app')
                 self.wait(previous,'app')
                 journal['phase']='recovered';atomic(self.journal_path,journal)
@@ -423,14 +432,21 @@ class Controller:
         return self.cutover(template,frozen_snapshot=snapshot)
 
     def recover(self):
-        journal=load(self.journal_path)
-        if journal['phase'] in ('complete','recovered'):return {'status':'nothing_to_recover'}
+        journal=load(self.journal_path) if self.journal_path.exists() else None
+        if not journal or journal['phase'] in ('complete','recovered'):
+            current=self.current()
+            self.dc(current,'up','-d','db','app');self.wait(current,'app');self.smoke(current)
+            backup=self.root/'backup-transaction.json'
+            if backup.exists():
+                transaction=load(backup);transaction['phase']='recovered';atomic(backup,transaction)
+            return {'status':'current_release_ready'}
         if journal['phase']=='exposure_started':
             current=self.current()
             require(current['id']==journal['next']['id'],'Unexpected current release; inspect manually')
             self.dc(current,'up','-d','app');self.wait(current,'app');self.smoke(current)
         else:
             self.dc(journal['next'],'stop','app','db')
+            if 'state_before' in journal: atomic(self.state_path,journal['state_before'])
             self.dc(journal['previous'],'start','app');self.wait(journal['previous'],'app')
         journal['phase']='recovered';atomic(self.journal_path,journal)
         return {'status':'recovered_without_discarding_exposed_data'}
@@ -448,6 +464,9 @@ def main():
     args=parser.parse_args()
     require(os.geteuid()==0,'Run on the TEST host as root')
     os.umask(0o077)
+    def interrupted(signum, frame):
+        raise RuntimeError('Interrupted; inspect the persistent transaction and run recover')
+    signal.signal(signal.SIGTERM,interrupted)
     controller=Controller(args.config)
     with controller.locks():
         if args.command=='status':
