@@ -323,17 +323,19 @@ class Controller:
             result=subprocess.run(['docker','compose','-p',record['project'],'-f',str(path/record['compose']),
                 'exec','-T','db','pg_restore','-U','postgres','--role=odoo','-d','odoo20','--exit-on-error','--no-owner','--no-acl'],
                 stdin=f,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=300)
+        if result.returncode:(path/'database-restore-error.log').write_bytes(result.stderr)
         require(result.returncode==0,'Database restore failed; retain private release for inspection')
         require(self.data_signature(record)==manifest['data_signature'],'Restored business/configuration data mismatch')
         volume=record['project']+'_filestore'
-        self.dc(record,'create','--no-deps','app')
+        self.dc(record,'create','--no-recreate','app')
         validate_archive(Path(snapshot)/'filestore.tar.gz',Path('/restore'))
         with (Path(snapshot)/'filestore.tar.gz').open('rb') as f:
-            result=subprocess.run(['docker','run','--rm','-i','--network','none','--user','0:0',
-                '--cap-drop','ALL','--cap-add','CHOWN','--cap-add','DAC_OVERRIDE',
+            result=subprocess.run(['docker','run','--rm','-i','--network','none','--user','10001:10001',
+                '--cap-drop','ALL',
                 '--mount','type=volume,source='+volume+',target=/restore','--entrypoint','sh',record['image'],
-                '-c','tar -xzf - -C /restore --no-same-owner && chown -R 10001:10001 /restore'],
+                '-c','tar -xzf - -C /restore --no-same-owner'],
                 stdin=f,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=180)
+        if result.returncode:(path/'filestore-restore-error.log').write_bytes(result.stderr)
         require(result.returncode==0,'Filestore restore failed')
         record['snapshot']=snapshot;record['status']='restored';self.save(record)
 
