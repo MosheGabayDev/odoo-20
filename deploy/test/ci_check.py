@@ -64,6 +64,13 @@ env.cr.commit()
             controller.restore_new(restored,str(snapshot));controller.upgrade(restored,neutralize=True)
             controller.dc(restored,'exec','-T','app','python','/opt/odoo/odoo-bin','shell','-c','/tmp/odoo.conf','--no-http',
                 stdin=b"assert env['ir.config_parameter'].sudo().get_str('odoo20.ci.setting')=='preserved'; assert env['crm.lead'].search_count([('name','=','CI_PERSISTENCE_PROOF')])==1; print('Settings and CRM restore verified')")
+            # Exercise the real prefork/gevent configuration without publishing a host port.
+            controller.cfg['public_url']='https://odoo.test.ai-data-platform.com'
+            controller.dc(restored,'stop','app')
+            controller.write_compose(restored,preview=False)
+            controller.smoke(restored)
+            controller.dc(restored,'exec','-T','app','python','-c',
+                "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:8072/websocket/health',timeout=10).status==200; print('Public-mode gevent readiness passed')")
         finally:
             if restored:
                 assert pathlib.Path(restored['directory']).is_relative_to(work/'releases')

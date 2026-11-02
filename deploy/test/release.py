@@ -88,7 +88,7 @@ def unpack(archive, target, *, names=None):
                     shutil.copyfileobj(source,destination)
                 path.chmod(0o600)
 
-def compose_document(project, image, pg_image, secrets, init_script, preview=True, port=None):
+def compose_document(project, image, pg_image, secrets, init_script, preview=True, port=None, public_url=None, websocket_port=18072):
     require(re.fullmatch(r'odoo20-[a-z0-9-]+',project),'Invalid project name')
     require(re.fullmatch(r'sha256:[0-9a-f]{64}',image),'Image must be an immutable local ID')
     require('@sha256:' in pg_image,'PostgreSQL image must use a digest')
@@ -102,6 +102,10 @@ def compose_document(project, image, pg_image, secrets, init_script, preview=Tru
         'healthcheck':{'test':['CMD','python','-c',"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8069/web/login',timeout=5)"],
                        'interval':'15s','timeout':'10s','start_period':'45s','retries':8}}
     if port: app['ports']=[f'127.0.0.1:{int(port)}:8069']
+    if public_url and not preview:
+        require(re.fullmatch(r'https://[a-z0-9.-]+',public_url),'Public URL must be an HTTPS origin')
+        app['environment'].update(ODOO_PROXY_MODE='1',ODOO_WORKERS='2')
+        if port:app['ports'].append(f'127.0.0.1:{int(websocket_port)}:8072')
     db = {'image':pg_image,'restart':'unless-stopped','environment':{
         'POSTGRES_PASSWORD_FILE':'/run/secrets/postgres_password','POSTGRES_INITDB_ARGS':'--auth-host=scram-sha-256'},
         'secrets':['postgres_password','odoo_db_password'],'networks':['database'],
@@ -254,8 +258,15 @@ class Controller:
             with tarfile.open(directory/'secrets.tar.gz','w:gz') as tar:
                 source=Path(self.cfg['secrets']) if record.get('legacy') else self.path(record)/'secrets'
                 for name in SECRETS: tar.add(source/name,arcname=name,recursive=False)
-            manifest={'id':ident,'record':record,'data_signature':signature,'image_archive':image_receipt,'files':{n:digest(directory/n) for n in
-                ('database.dump','filestore.tar.gz','secrets.tar.gz')},'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
+            files=['database.dump','filestore.tar.gz','secrets.tar.gz']
+            atomic(directory/'deployment-config.json',self.cfg);files.append('deployment-config.json')
+            https_dir=self.root/'https'
+            if self.cfg.get('public_url') and https_dir.is_dir():
+                with tarfile.open(directory/'https-state.tar.gz','w:gz') as tar:
+                    for name in ('secrets','letsencrypt','certbot-image.txt','certbot-renew.sh','odoo20-https.conf'):
+                        if (https_dir/name).exists():tar.add(https_dir/name,arcname=name)
+                files.append('https-state.tar.gz')
+            manifest={'id':ident,'record':record,'data_signature':signature,'image_archive':image_receipt,'files':{n:digest(directory/n) for n in files},'created_utc':dt.datetime.now(dt.timezone.utc).isoformat()}
             atomic(directory/'manifest.json',manifest)
             uri=self.cfg['backup_uri']+'/snapshots/'+ident
             run(['aws','s3','cp',str(directory)+'/',uri+'/','--recursive','--sse','aws:kms','--only-show-errors'],cwd=directory)
@@ -296,7 +307,8 @@ class Controller:
 
     def write_compose(self, record, *, preview=True, port=None):
         document=compose_document(record['project'],record['image'],self.cfg['pg_image'],
-            self.path(record)/'secrets',self.root/'init-db.sh',preview,port)
+            self.path(record)/'secrets',self.root/'init-db.sh',preview,port,
+            self.cfg.get('public_url'),self.cfg.get('websocket_port',18072))
         atomic(self.path(record)/record['compose'],document)
 
     def wait(self, record, service):
@@ -410,6 +422,9 @@ class Controller:
     def cutover(self, template, *, frozen_snapshot=None, fail_before_exposure=False):
         self.clean_journal();self.guards()
         protected=self.capture_platform();previous=self.current()
+        if self.cfg.get('public_url') and not self.cfg.get('sandbox'):
+            labels=json.loads(run(['docker','image','inspect',template['image'],'--format','{{json .Config.Labels}}'])) or {}
+            require(labels.get('io.odoo.release.public-proxy')=='1','Image predates public HTTPS support; restore it privately instead')
         require(template.get('base_id',previous['id'])==previous['id'],'Candidate is stale; prepare again')
         next_record=self.new_record(template['image'],template['source'],template.get('upgrade',[]),template.get('install',[]),template.get('test',[]))
         next_record['required']=template.get('required',next_record['required'])

@@ -1,6 +1,7 @@
 ARG PYTHON_IMAGE=python:3.12-slim-bookworm
 FROM ${PYTHON_IMAGE}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+LABEL io.odoo.release.public-proxy="1"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libldap2-dev libsasl2-dev libpq-dev libssl-dev libffi-dev \
     libjpeg62-turbo-dev zlib1g-dev libxml2-dev libxslt1-dev \

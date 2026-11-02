@@ -14,6 +14,10 @@ def secret(name):
     return value
 
 preview = os.environ.get('ODOO_PREVIEW', '0') == '1'
+proxy = not preview and os.environ.get('ODOO_PROXY_MODE', '0') == '1'
+workers = 0 if preview else int(os.environ.get('ODOO_WORKERS', '0'))
+if not 0 <= workers <= 4 or (proxy and workers < 1):
+    sys.exit('Invalid worker configuration; public proxy mode requires workers.')
 password = secret('odoo_db_password')
 config = pathlib.Path('/tmp/odoo.conf')
 os.umask(0o077)
@@ -23,8 +27,9 @@ config.write_text('[options]\n'
     'db_name = odoo20\ndbfilter = ^odoo20$\nlist_db = False\n'
     f'admin_passwd = {secret("odoo_master_password")}\n'
     'data_dir = /var/lib/odoo\naddons_path = /opt/odoo/addons,/opt/odoo/custom-addons\n'
-    'http_interface = 0.0.0.0\nhttp_port = 8069\nproxy_mode = False\n'
-    f'workers = 0\nmax_cron_threads = {0 if preview else 1}\n'
+    f'http_interface = 0.0.0.0\nhttp_port = 8069\ngevent_port = 8072\nproxy_mode = {proxy}\n'
+    f'workers = {workers}\nmax_cron_threads = {0 if preview else 1}\n'
+    'limit_memory_soft = 402653184\nlimit_memory_hard = 536870912\n'
     'limit_time_cpu = 120\nlimit_time_real = 240\n')
 base = [sys.executable, '/opt/odoo/odoo-bin']
 mode = sys.argv[1] if len(sys.argv) > 1 else 'serve'

@@ -39,6 +39,25 @@ class SafetyTests(unittest.TestCase):
         doc=r.compose_document('odoo20-unit','sha256:'+'a'*64,'postgres@sha256:'+'b'*64,'/private','/init',False,18069)
         self.assertEqual(doc['services']['app']['ports'],['127.0.0.1:18069:8069'])
 
+    def test_https_uses_workers_and_loopback_websocket_only(self):
+        doc=r.compose_document('odoo20-unit','sha256:'+'a'*64,'postgres@sha256:'+'b'*64,'/private','/init',False,18069,
+                               'https://odoo.test.ai-data-platform.com')
+        self.assertEqual(doc['services']['app']['environment']['ODOO_PROXY_MODE'],'1')
+        self.assertEqual(doc['services']['app']['environment']['ODOO_WORKERS'],'2')
+        self.assertIn('127.0.0.1:18072:8072',doc['services']['app']['ports'])
+        self.assertNotIn('ports',doc['services']['db'])
+
+    def test_preview_never_inherits_public_proxy_mode(self):
+        doc=r.compose_document('odoo20-unit','sha256:'+'a'*64,'postgres@sha256:'+'b'*64,'/private','/init',True,None,
+                               'https://odoo.test.ai-data-platform.com')
+        self.assertNotIn('ODOO_PROXY_MODE',doc['services']['app']['environment'])
+        self.assertNotIn('ports',doc['services']['app'])
+
+    def test_public_origin_rejects_plain_http_and_embedded_credentials(self):
+        for url in ('http://odoo.example.com','https://user:password@example.com','https://example.com/path'):
+            with self.subTest(url=url),self.assertRaises(RuntimeError):
+                r.compose_document('odoo20-unit','sha256:'+'a'*64,'postgres@sha256:'+'b'*64,'/p','/i',False,18069,url)
+
     def test_rejects_mutable_image_and_other_project(self):
         for project,image,pg in [('platform','sha256:'+'a'*64,'postgres@sha256:abc'),
                                  ('odoo20-unit','latest','postgres@sha256:abc'),

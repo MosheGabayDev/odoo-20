@@ -1,0 +1,11 @@
+[Unit]
+Description=Renew the dedicated Odoo TEST HTTPS certificate
+After=docker.service network-online.target
+Requires=docker.service
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/odoo20-test/https/certbot-renew.sh
+Nice=10
+Restart=on-failure
+RestartSec=900
+TimeoutStartSec=1800

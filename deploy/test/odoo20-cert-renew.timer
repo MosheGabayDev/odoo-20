@@ -1,0 +1,8 @@
+[Unit]
+Description=Check Odoo TEST HTTPS certificate renewal twice daily
+[Timer]
+OnCalendar=*-*-* 03,15:17:00 UTC
+RandomizedDelaySec=1800
+Persistent=true
+[Install]
+WantedBy=timers.target
