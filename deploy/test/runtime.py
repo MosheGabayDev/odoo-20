@@ -3,6 +3,7 @@ import os
 import pathlib
 import subprocess
 import sys
+import re
 
 import psycopg2
 
@@ -12,6 +13,7 @@ def secret(name):
         raise ValueError('Invalid secret file: ' + name)
     return value
 
+preview = os.environ.get('ODOO_PREVIEW', '0') == '1'
 password = secret('odoo_db_password')
 config = pathlib.Path('/tmp/odoo.conf')
 os.umask(0o077)
@@ -20,9 +22,9 @@ config.write_text('[options]\n'
     f'db_password = {password}\n'
     'db_name = odoo20\ndbfilter = ^odoo20$\nlist_db = False\n'
     f'admin_passwd = {secret("odoo_master_password")}\n'
-    'data_dir = /var/lib/odoo\naddons_path = /opt/odoo/addons\n'
+    'data_dir = /var/lib/odoo\naddons_path = /opt/odoo/addons,/opt/odoo/custom-addons\n'
     'http_interface = 0.0.0.0\nhttp_port = 8069\nproxy_mode = False\n'
-    'workers = 0\nmax_cron_threads = 1\n'
+    f'workers = 0\nmax_cron_threads = {0 if preview else 1}\n'
     'limit_time_cpu = 120\nlimit_time_real = 240\n')
 base = [sys.executable, '/opt/odoo/odoo-bin']
 mode = sys.argv[1] if len(sys.argv) > 1 else 'serve'
@@ -44,10 +46,28 @@ print('Dedicated admin password configured; CRM installed.')
 """
     subprocess.run(base + ['shell', '-c', str(config), '--no-http'], input=script,
                    text=True, check=True)
-    pathlib.Path('/var/lib/odoo/.initialized').write_text('0cdbc41e6e1588ba5755df944ba2407bd4ed888f\n')
+    pathlib.Path('/var/lib/odoo/.initialized').write_text(pathlib.Path('/opt/odoo/SOURCE_COMMIT').read_text())
+elif mode in ('upgrade', 'install', 'test', 'neutralize'):
+    if mode == 'neutralize':
+        if not preview:
+            sys.exit('Neutralization is permitted only in a private preview.')
+        command = base + ['neutralize', '-c', str(config), '--no-http']
+    else:
+        modules = sys.argv[2:]
+        if not modules or any(not re.fullmatch(r'[a-z][a-z0-9_]*', m) or m in ('all', 'base') for m in modules):
+            sys.exit('Supply explicit module names; broad base/all upgrades are prohibited.')
+        if mode == 'test':
+            if not preview:
+                sys.exit('Tests are permitted only in a private preview.')
+            command = base + ['-c', str(config), '-u', ','.join(modules), '--test-enable',
+                              '--test-tags', ','.join('/' + m for m in modules),
+                              '--stop-after-init', '--no-http']
+        else:
+            command = base + ['module', mode, '-c', str(config), '-d', 'odoo20'] + modules
+    subprocess.run(command, check=True)
 elif mode == 'serve':
     if not pathlib.Path('/var/lib/odoo/.initialized').is_file():
         sys.exit('Run isolated bootstrap successfully before starting the HTTP service.')
     os.execv(sys.executable, base + ['-c', str(config)])
 else:
-    sys.exit('Supported modes: bootstrap, serve')
+    sys.exit('Supported modes: bootstrap, serve, upgrade, install, test, neutralize')

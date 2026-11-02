@@ -1,4 +1,5 @@
-FROM python:3.12-slim-bookworm
+ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+FROM ${PYTHON_IMAGE}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libldap2-dev libsasl2-dev libpq-dev libssl-dev libffi-dev \
@@ -12,10 +13,12 @@ RUN git init /opt/odoo && cd /opt/odoo \
     && test "$(git rev-parse HEAD)" = "$ODOO_COMMIT" \
     && printf '%s\n' "$ODOO_COMMIT" > /opt/odoo/SOURCE_COMMIT \
     && rm -rf /opt/odoo/.git
+RUN mkdir -p /opt/odoo/custom-addons
 RUN pip install --no-cache-dir -r /opt/odoo/requirements.txt
 RUN groupadd --gid 10001 odoo && useradd --uid 10001 --gid 10001 --home-dir /var/lib/odoo odoo \
     && mkdir -p /var/lib/odoo && chown 10001:10001 /var/lib/odoo
 COPY --chmod=0444 runtime.py /usr/local/bin/odoo-runtime.py
+COPY --chmod=0444 smoke.py /usr/local/bin/odoo-smoke.py
 USER 10001:10001
 WORKDIR /opt/odoo
 ENTRYPOINT ["python", "/usr/local/bin/odoo-runtime.py"]

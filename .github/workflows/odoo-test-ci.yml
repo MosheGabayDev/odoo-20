@@ -1,0 +1,28 @@
+name: Odoo TEST release checks
+on:
+  push:
+    branches: [deploy/test]
+    paths: [deploy/test/**, custom-addons/**, .github/workflows/odoo-test-ci.yml]
+  pull_request:
+    paths: [deploy/test/**, custom-addons/**, .github/workflows/odoo-test-ci.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: odoo-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Controller safety tests
+        run: python3 -m unittest discover -s deploy/test -p test_release.py -v
+      - name: Docker build, CRM upgrade, login and persistent recreation
+        env:
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python3 deploy/test/ci_check.py --commit "$SOURCE_COMMIT"
+      # There are deliberately no AWS credentials and no server deployment step.
