@@ -38,7 +38,7 @@ def main():
             fixture=b"""import base64
 lead=env['crm.lead'].create({'name':'CI_PERSISTENCE_PROOF'})
 env['ir.config_parameter'].sudo().set_str('odoo20.ci.setting','preserved')
-env['ir.attachment'].create({'name':'ci-proof.txt','res_model':'crm.lead','res_id':lead.id,'datas':base64.b64encode(b'preserved attachment')})
+env['ir.attachment'].create({'name':'ci-proof.txt','res_model':'crm.lead','res_id':lead.id,'raw':b'preserved attachment'})
 env.cr.commit()
 """
             subprocess.run(dc+['exec','-T','app','python','/opt/odoo/odoo-bin','shell','-c','/tmp/odoo.conf','--no-http'],input=fixture,check=True)

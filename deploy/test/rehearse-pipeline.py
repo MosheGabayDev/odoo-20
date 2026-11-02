@@ -40,7 +40,7 @@ with main.locks():
     first_code="""import base64,json
 lead=env['crm.lead'].create({'name':'PIPELINE_PERSISTENCE_TOKEN'})
 env['ir.config_parameter'].sudo().set_str('odoo20.pipeline.proof','TOKEN')
-attachment=env['ir.attachment'].create({'name':'pipeline-proof.txt','res_model':'crm.lead','res_id':lead.id,'datas':base64.b64encode(b'PERSISTED_FILE_TOKEN')})
+attachment=env['ir.attachment'].create({'name':'pipeline-proof.txt','res_model':'crm.lead','res_id':lead.id,'raw':b'PERSISTED_FILE_TOKEN'})
 env.cr.commit()
 print(json.dumps({'lead':lead.id,'attachment':attachment.id}))
 """.replace('TOKEN',token)
@@ -49,7 +49,7 @@ lead=env['crm.lead'].search([('name','=','PIPELINE_PERSISTENCE_TOKEN')])
 assert len(lead)==1
 assert env['ir.config_parameter'].sudo().get_str('odoo20.pipeline.proof')=='TOKEN'
 attachment=env['ir.attachment'].search([('name','=','pipeline-proof.txt'),('res_id','=',lead.id)])
-assert len(attachment)==1 and base64.b64decode(attachment.datas)==b'PERSISTED_FILE_TOKEN'
+assert len(attachment)==1 and attachment.raw.content==b'PERSISTED_FILE_TOKEN'
 print('CRM record, setting and attachment persisted')
 """.replace('TOKEN',token)
     try:
