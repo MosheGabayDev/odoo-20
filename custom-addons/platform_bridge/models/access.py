@@ -9,7 +9,7 @@ from odoo.exceptions import AccessDenied
 from .bridge import request_scope
 
 
-class IrHttp(models.Model):
+class IrHttp(models.AbstractModel):
     _inherit = 'ir.http'
 
     @classmethod
