@@ -175,7 +175,7 @@ class Users(models.Model):
         if not self.sudo().pe_subject:
             return [] if self.has_group('base.group_system') else [('pe_managed','=',False)]
         scope=self._pe_identity()
-        if operation=='d':return [(1,'=',0)]
+        if operation=='d':return [('id','=',0)]
         common=[('pe_managed','=',True),('pe_org_id','=',scope['org'])]
         if operation=='r':
             ids=[str(v) for v in scope['read_contact_ids']]
