@@ -1,0 +1,7 @@
+id,name,model_id,group_id/id,operation,domain
+bridge_config_admin,Platform configuration,pe.bridge.config,base.group_system,ru,
+bridge_partner_read,Platform contact privacy,res.partner,,r,"user._pe_partner_domain('r')"
+bridge_partner_write,Platform contact owner write,res.partner,,u,"user._pe_partner_domain('u')"
+bridge_partner_create,Platform contact owner create,res.partner,,c,"user._pe_partner_domain('c')"
+bridge_partner_delete,Platform reviewed deletion,res.partner,,d,"user._pe_partner_domain('d')"
+bridge_users_scope,Platform user scope,res.users,,crud,user._pe_user_domain()

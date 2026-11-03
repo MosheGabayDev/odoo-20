@@ -1,0 +1,7 @@
+<odoo noupdate="1">
+  <record id="main" model="pe.bridge.config">
+    <field name="name">Platform Engineer</field>
+    <field name="enabled" eval="False"/>
+    <field name="writes_enabled" eval="False"/>
+  </record>
+</odoo>

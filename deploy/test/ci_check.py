@@ -33,6 +33,8 @@ def main():
             subprocess.run(dc+['up','-d','--wait','db'],check=True)
             subprocess.run(dc+['run','--rm','--no-deps','-T','app','bootstrap'],check=True)
             subprocess.run(dc+['run','--rm','--no-deps','-T','app','upgrade','crm'],check=True)
+            subprocess.run(dc+['run','--rm','--no-deps','-T','app','install','platform_bridge'],check=True)
+            subprocess.run(dc+['run','--rm','--no-deps','-T','app','test','platform_bridge'],check=True)
             subprocess.run(dc+['up','-d','--wait','app'],check=True)
             subprocess.run(dc+['exec','-T','app','python','/usr/local/bin/odoo-smoke.py','crm'],check=True)
             fixture=b"""import base64
