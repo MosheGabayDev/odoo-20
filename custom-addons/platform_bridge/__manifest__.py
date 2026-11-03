@@ -4,7 +4,7 @@
     'license': 'LGPL-3',
     'author': 'Platform Engineer',
     'depends': ['base', 'web', 'contacts'],
-    'data': ['security/ir.access.csv', 'data/config.xml', 'views/bridge.xml'],
+    'data': ['security/ir.access.csv', 'data/config.xml', 'data/cron.xml', 'views/bridge.xml', 'views/sync.xml'],
     'installable': True,
     'application': False,
 }

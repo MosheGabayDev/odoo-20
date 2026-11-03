@@ -1,0 +1,12 @@
+<odoo noupdate="1">
+  <record id="sync_cron" model="ir.cron">
+    <field name="name">Platform Engineer contact synchronization</field>
+    <field name="model_id" ref="model_pe_bridge_link"/>
+    <field name="state">code</field>
+    <field name="code">model._sync_tick()</field>
+    <field name="user_id" ref="base.user_root"/>
+    <field name="interval_number">1</field>
+    <field name="interval_type">minutes</field>
+    <field name="active" eval="False"/>
+  </record>
+</odoo>

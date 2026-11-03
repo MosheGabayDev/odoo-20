@@ -5,3 +5,7 @@ bridge_partner_write,Platform contact owner write,res.partner,,u,"user._pe_partn
 bridge_partner_create,Platform contact owner create,res.partner,,c,"user._pe_partner_domain('c')"
 bridge_partner_delete,Platform reviewed deletion,res.partner,,d,"user._pe_partner_domain('d')"
 bridge_users_scope,Platform user scope,res.users,,crud,user._pe_user_domain()
+bridge_links_user,Own contact sync review,pe.bridge.link,base.group_partner_manager,r,
+bridge_links_admin,Contact sync operator,pe.bridge.link,base.group_system,r,
+bridge_links_scope,Contact sync privacy,pe.bridge.link,,r,user._pe_link_domain()
+bridge_operation_admin,Original sync operation receipts,pe.bridge.operation,base.group_system,r,
