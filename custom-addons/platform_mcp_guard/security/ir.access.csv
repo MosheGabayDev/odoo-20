@@ -3,3 +3,9 @@ mcp_config_admin,Manage scoped TEST MCP,pe.mcp.config,base.group_system,ru,
 mcp_task_read,Read designated TEST tasks,project.task,platform_mcp_guard.group_reader,r,user._mcp_task_domain()
 mcp_project_read,Read designated TEST project,project.project,platform_mcp_guard.group_reader,r,"[('id','=',user._mcp_project_id())]"
 mcp_stage_read,Read designated TEST stages,project.task.type,platform_mcp_guard.group_reader,r,"[('id','in',user._mcp_stage_ids())]"
+mcp_task_bound,Restrict MCP task reader,project.task,,r,user._mcp_restriction('project.task')
+mcp_project_bound,Restrict MCP project reader,project.project,,r,user._mcp_restriction('project.project')
+mcp_stage_bound,Restrict MCP stage reader,project.task.type,,r,user._mcp_restriction('project.task.type')
+mcp_task_no_write,Prevent MCP task changes,project.task,,cud,"user._mcp_restriction('project.task',True)"
+mcp_project_no_write,Prevent MCP project changes,project.project,,cud,"user._mcp_restriction('project.project',True)"
+mcp_stage_no_write,Prevent MCP stage changes,project.task.type,,cud,"user._mcp_restriction('project.task.type',True)"

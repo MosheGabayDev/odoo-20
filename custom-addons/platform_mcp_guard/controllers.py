@@ -4,6 +4,16 @@ from odoo.addons.muk_mcp.controllers.mcp import MCPController
 
 
 class ScopedMCP(MCPController):
+    def _handle_initialize(self,params):
+        result=super()._handle_initialize(params)
+        result['capabilities']={'tools':{}}
+        return result
+
+    def _handle_discover(self,params):
+        result=super()._handle_discover(params)
+        result['capabilities']={'tools':{}}
+        return result
+
     def _get_handlers(self,protocol_version):
         allowed={'initialize','server/discover','ping','tools/list','tools/call'}
         return {k:v for k,v in super()._get_handlers(protocol_version).items() if k in allowed}

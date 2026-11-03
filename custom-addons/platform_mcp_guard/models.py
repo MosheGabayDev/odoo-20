@@ -57,6 +57,14 @@ class Config(models.Model):
 class Users(models.Model):
     _inherit='res.users'
 
+    def _mcp_restriction(self,model,write=False):
+        if not self.has_group('platform_mcp_guard.group_reader'):
+            return []
+        if write:return [('id','=',0)]
+        if model=='project.task':return self._mcp_task_domain()
+        if model=='project.project':return [('id','=',self._mcp_project_id())]
+        return [('id','in',self._mcp_stage_ids())]
+
     def write(self,vals):
         group=self.env.ref('platform_mcp_guard.group_reader',raise_if_not_found=False)
         readers=self.sudo().filtered(lambda user:group in user.group_ids) if group and vals.get('active') is False else self.browse()
@@ -89,7 +97,7 @@ class Access(models.Model):
     def _get_access_context(self):
         yield from super()._get_access_context()
         config=self.env['pe.mcp.config']._config()
-        yield hashlib.sha256(json.dumps((config.enabled,config.user_id.id,config.project_id.id,config.task_ids.ids)).encode()).hexdigest() if config else 'mcp-disabled'
+        yield hashlib.sha256(json.dumps((config.enabled,config.user_id.id,config.project_id.id,config.task_ids.ids,config._ready())).encode()).hexdigest() if config else 'mcp-disabled'
 
 
 class Keys(models.Model):
