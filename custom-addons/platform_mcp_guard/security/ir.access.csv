@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+mcp_config_admin,Manage scoped TEST MCP,pe.mcp.config,base.group_system,ru,
+mcp_task_read,Read designated TEST tasks,project.task,platform_mcp_guard.group_reader,r,user._mcp_task_domain()
+mcp_project_read,Read designated TEST project,project.project,platform_mcp_guard.group_reader,r,"[('id','=',user._mcp_project_id())]"
+mcp_stage_read,Read designated TEST stages,project.task.type,platform_mcp_guard.group_reader,r,"[('id','in',user._mcp_stage_ids())]"

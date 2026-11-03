@@ -15,6 +15,22 @@ RUN git init /opt/odoo && cd /opt/odoo \
     && printf '%s\n' "$ODOO_COMMIT" > /opt/odoo/SOURCE_COMMIT \
     && rm -rf /opt/odoo/.git
 RUN mkdir -p /opt/odoo/custom-addons
+RUN python - <<'PY'
+import json, subprocess, pathlib, shutil
+pin=json.loads(pathlib.Path('/opt/odoo/deploy/test/vendor-addons.json').read_text())
+assert pin['repository']=='https://github.com/muk-it/odoo-modules.git'
+assert pin['commit']=='b9917747e54cab6eed55527e7ee309f8ee71b6e9'
+assert pin['modules']==['muk_mcp','muk_mcp_access','muk_web_utils']
+root=pathlib.Path('/tmp/odoo-reviewed-vendor')
+subprocess.run(['git','init',str(root)],check=True)
+subprocess.run(['git','-C',str(root),'fetch','--depth','1',pin['repository'],pin['commit']],check=True)
+subprocess.run(['git','-C',str(root),'checkout','--detach','FETCH_HEAD'],check=True)
+assert subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()==pin['commit']
+for name in pin['modules']:shutil.copytree(root/name,pathlib.Path('/opt/odoo/custom-addons')/name)
+shutil.copy2(root/'LICENSE','/opt/odoo/custom-addons/MUK-LICENSE')
+pathlib.Path('/opt/odoo/VENDOR_ADDONS.json').write_text(json.dumps(pin,sort_keys=True))
+shutil.rmtree(root)
+PY
 RUN pip install --no-cache-dir -r /opt/odoo/requirements.txt
 RUN groupadd --gid 10001 odoo && useradd --uid 10001 --gid 10001 --home-dir /var/lib/odoo odoo \
     && mkdir -p /var/lib/odoo && chown 10001:10001 /var/lib/odoo

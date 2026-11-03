@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/muk-it/odoo-modules.git",
+  "commit": "b9917747e54cab6eed55527e7ee309f8ee71b6e9",
+  "modules": ["muk_mcp", "muk_mcp_access", "muk_web_utils"],
+  "license": "LGPL-3",
+  "qualification": "MuK 20.0.4.2.5 / Access 20.0.1.1.16 / Web Utils 20.0.1.2.19"
+}

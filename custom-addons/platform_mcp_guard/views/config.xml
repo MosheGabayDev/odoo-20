@@ -1,0 +1,12 @@
+<odoo>
+  <record id="config_form" model="ir.ui.view">
+    <field name="name">pe.mcp.config.form</field><field name="model">pe.mcp.config</field>
+    <field name="arch" type="xml"><form create="false" delete="false"><sheet>
+      <h1>Scoped TEST MCP</h1>
+      <p>Only the designated test tasks and selected read fields are exposed. Keys expire within seven days. An empty policy denies access.</p>
+      <group><field name="enabled"/><field name="user_id"/><field name="project_id"/><field name="task_ids" widget="many2many_tags" domain="[('project_id','=',project_id)]"/></group>
+    </sheet></form></field>
+  </record>
+  <record id="config_action" model="ir.actions.act_window"><field name="name">Scoped TEST MCP</field><field name="res_model">pe.mcp.config</field><field name="view_mode">form</field><field name="res_id" ref="main"/></record>
+  <menuitem id="config_menu" name="Scoped TEST MCP" parent="base.menu_administration" action="config_action" groups="base.group_system" sequence="90"/>
+</odoo>
