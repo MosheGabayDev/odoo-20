@@ -18,7 +18,7 @@ class TestBridge(TransactionCase):
         for uid in (901,902):
             cls.users.append(cls.env['res.users'].sudo().create(dict(
                 name=f'Synthetic PE {uid}',login=f'pe-fixture-{uid}',
-                email=f'pe-{uid}@example.invalid',password=False,
+                email=f'pe-{uid}@example.invalid',
                 company_id=cls.env.company.id,company_ids=[fields.Command.set(cls.env.company.ids)],
                 group_ids=[fields.Command.set(groups)],pe_org_id=11,pe_user_id=uid,
                 pe_subject=f'pe:org:11:user:{uid}',pe_access_version=1)))

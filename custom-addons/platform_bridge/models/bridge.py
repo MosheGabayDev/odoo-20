@@ -118,7 +118,7 @@ class Config(models.Model):
             # Never attach by email, login resemblance or a conflicting local account.
             raise AccessDenied('Explicit account-link review required')
         user=users.create(dict(name=(identity['first_name']+' '+identity['last_name']).strip(),
-            login=login,email=identity['email'],password=False,company_id=config.company_id.id,
+            login=login,email=identity['email'],company_id=config.company_id.id,
             company_ids=[fields.Command.set(config.company_id.ids)],
             group_ids=[fields.Command.set([self.env.ref('base.group_user').id,
                                          self.env.ref('base.group_partner_manager').id])],
