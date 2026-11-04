@@ -124,6 +124,20 @@ class TestBridge(TransactionCase):
         self.assertFalse(user.has_group('base.group_system'))
         self.assertFalse(user.has_group('base.group_erp_manager'))
 
+    def test_initial_sso_provision_from_anonymous_callback_environment(self):
+        identity={k:v for k,v in self.scope.items() if k!='odoo_uid'}
+        identity.update(user=904,sub=f'pe:org:{self.org}:user:904',first_name='Synthetic anonymous callback',email='callback@example.invalid')
+        anonymous=api.Environment(self.env.cr,None,{})
+        self.assertFalse(anonymous.uid)
+        user=anonymous['pe.bridge.config']._provision(identity,'h'*43)
+        self.assertEqual(user.pe_subject,identity['sub'])
+        self.assertNotEqual(user,self.env.ref('base.user_admin'))
+        self.assertFalse(user.has_group('base.group_system'))
+        self.assertFalse(user.has_group('base.group_erp_manager'))
+        self.assertTrue(user.partner_id.image_1920)
+        again=anonymous['pe.bridge.config']._provision(identity,'j'*43)
+        self.assertEqual(again,user)
+
     def test_organization_cannot_be_rebound_over_existing_accounts(self):
         with self.assertRaises(ValidationError):self.config.write({'org_id':22})
 

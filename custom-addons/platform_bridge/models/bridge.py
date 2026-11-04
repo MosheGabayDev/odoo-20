@@ -5,7 +5,7 @@ import re
 
 import requests
 
-from odoo import api, fields, models
+from odoo import api, fields, models, SUPERUSER_ID
 from odoo.exceptions import AccessDenied, AccessError, ValidationError
 from odoo.http import request
 from odoo.fields import Domain
@@ -132,7 +132,11 @@ class Config(models.Model):
         config=self._config()
         if not isinstance(contacts_grant,str) or not TOKEN.fullmatch(contacts_grant):
             raise AccessDenied('Contact authorization unavailable')
-        users=self.env['res.users'].sudo().with_context(active_test=False,no_reset_password=True,
+        # The auth='none' callback has no uid. sudo() alone preserves that empty
+        # uid, and Odoo20 avatar attachment checks temporarily drop sudo and
+        # require an actual user. Bind only this trusted provisioning operation
+        # to the system uid; the new account retains the explicit basic groups.
+        users=self.env['res.users'].with_user(SUPERUSER_ID).sudo().with_context(active_test=False,no_reset_password=True,
             tracking_disable=True,mail_create_nolog=True,mail_create_nosubscribe=True,
             mail_auto_subscribe_no_notify=True)
         user=users.search([('pe_subject','=',identity['sub'])],limit=1)
