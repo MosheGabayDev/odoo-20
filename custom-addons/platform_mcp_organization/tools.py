@@ -170,7 +170,11 @@ class Tool(models.Model):
             assert_records(env,'res.users',[args['user_id']])
         if name=='print_report':
             report=env['muk_mcp.mixin']._resolve_report(args.get('report_ref'))
-            if not report or report.model not in ('sale.order','account.move'):
+            approved=env['ir.actions.report'].browse()
+            for xmlid in ('sale.action_report_saleorder','account.account_invoices','account.account_invoices_without_payment'):
+                candidate=env.ref(xmlid,raise_if_not_found=False)
+                if candidate and candidate._name=='ir.actions.report':approved|=candidate
+            if not report or report not in approved:
                 raise AccessError('Only reviewed sale and invoice business reports are enabled.')
             assert_records(env,report.model,args['ids'])
         if name=='authorize_upload' and (type(args.get('size',0))is not int or not 0<=args.get('size',0)<=MAX_FILE_BYTES):

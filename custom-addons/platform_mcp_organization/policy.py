@@ -52,6 +52,8 @@ WRITE={m:set(fields.split())|{'name','active'} for m,fields in FIELDS.items()}
 READ_ONLY=frozenset(('res.users','res.company','res.country','res.country.state','res.currency','res.lang',
     'uom.uom','mail.activity.type','mail.activity','ir.attachment'))
 for model in READ_ONLY:WRITE.pop(model,None)
+WRITE['ir.attachment']={'name'}
+WRITE['mail.activity']={'summary','note','date_deadline','user_id','activity_type_id'}
 for model in WRITE:
  WRITE[model]-={'create_date','write_date','amount_total','amount_tax','amount_untaxed','amount_residual',
      'price_subtotal','price_tax','price_total','debit','credit','balance','amount_currency','customer_rank','supplier_rank'}
@@ -70,6 +72,7 @@ METHODS={
  'product.template':{'action_archive','action_unarchive'},
  'product.product':{'action_archive','action_unarchive'},
  'res.partner':{'action_archive','action_unarchive'},
+ 'mail.activity':{'action_done','action_feedback'},
 }
 MAX_RECORDS=100
 MAX_FILE_BYTES=5*1024*1024

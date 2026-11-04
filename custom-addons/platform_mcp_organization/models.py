@@ -78,7 +78,7 @@ class Users(models.Model):
             target_model,target_id=('model','res_id') if model=='mail.message' else ('res_model','res_id')
             terms=[]
             for name in WRITE:
-                if name in self.env and name not in GLOBAL and name!='project.task.type':
+                if name in self.env and name not in GLOBAL and name not in ('project.task.type','ir.attachment','mail.activity','mail.message'):
                     ids=self.env[name].with_user(self).search([]).ids
                     if ids:terms.append(Domain([(target_model,'=',name),(target_id,'in',ids)]))
             if model=='ir.attachment':

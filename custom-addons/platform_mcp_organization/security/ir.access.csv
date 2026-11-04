@@ -131,12 +131,14 @@ org_write_33,Organization MCP edit calendar.event,calendar.event,platform_mcp_or
 org_read_34,Organization MCP mail.activity,mail.activity,platform_mcp_organization.group_writer,r,user._mcp_org_domain('mail.activity')
 org_bound_read_34,Organization MCP boundary mail.activity,mail.activity,,r,user._mcp_restriction('mail.activity')
 org_bound_write_34,Organization MCP write boundary mail.activity,mail.activity,,cud,"user._mcp_restriction('mail.activity',True)"
+org_write_34,Organization MCP edit mail.activity,mail.activity,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('mail.activity',True)"
 org_read_35,Organization MCP mail.activity.type,mail.activity.type,platform_mcp_organization.group_writer,r,user._mcp_org_domain('mail.activity.type')
 org_bound_read_35,Organization MCP boundary mail.activity.type,mail.activity.type,,r,user._mcp_restriction('mail.activity.type')
 org_bound_write_35,Organization MCP write boundary mail.activity.type,mail.activity.type,,cud,"user._mcp_restriction('mail.activity.type',True)"
 org_read_36,Organization MCP ir.attachment,ir.attachment,platform_mcp_organization.group_writer,r,user._mcp_org_domain('ir.attachment')
 org_bound_read_36,Organization MCP boundary ir.attachment,ir.attachment,,r,user._mcp_restriction('ir.attachment')
 org_bound_write_36,Organization MCP write boundary ir.attachment,ir.attachment,,cud,"user._mcp_restriction('ir.attachment',True)"
+org_write_36,Organization MCP edit ir.attachment,ir.attachment,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('ir.attachment',True)"
 org_read_37,Organization MCP utm.source,utm.source,platform_mcp_organization.group_writer,r,user._mcp_org_domain('utm.source')
 org_bound_read_37,Organization MCP boundary utm.source,utm.source,,r,user._mcp_restriction('utm.source')
 org_bound_write_37,Organization MCP write boundary utm.source,utm.source,,cud,"user._mcp_restriction('utm.source',True)"
