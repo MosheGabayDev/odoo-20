@@ -171,7 +171,7 @@ class Allowlist(models.Model):
 
     def _is_model_allowed(self,model_name,category='read'):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._is_model_allowed(model_name,category)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._is_model_allowed(model_name,category)
         if model_name not in READ or category=='write' and model_name not in WRITE:return False
         domain=[('model_name','=',model_name),('allow_read','=',True),('domain','!=',False)]
         if category=='write':domain.append(('allow_write','=',True))
@@ -179,13 +179,13 @@ class Allowlist(models.Model):
 
     def _get_allowed_model_names(self,category):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._get_allowed_model_names(category)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._get_allowed_model_names(category)
         return {model for model in READ if model in self.env and self._is_model_allowed(model,category)}
 
     @api.constrains('model_id','allow_write','domain')
     def _check_narrow_allowlist(self):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._check_narrow_allowlist()
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._check_narrow_allowlist()
         for entry in self:
             if entry.model_name not in READ or entry.allow_write and entry.model_name not in WRITE or not entry.domain:
                 raise ValidationError('Organization MCP requires an explicit business-model domain and approved operations.')
@@ -202,7 +202,7 @@ class Attachment(models.Model):
     @api.model_create_multi
     def create(self,vals_list):
         cfg=config(self.env)
-        if cfg and cfg.access_mode=='organization' and self.env.uid==cfg.user_id.id and not self.env.su:
+        if cfg and cfg.access_mode in ('organization','personal') and self.env.uid==cfg.user_id.id and not self.env.su:
             vals_list=[dict(v,company_id=cfg.company_id.id) for v in vals_list]
         return super().create(vals_list)
 
@@ -219,7 +219,7 @@ class Transfer(models.Model):
     @api.model
     def _issue(self,operation,**values):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._issue(operation,**values)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._issue(operation,**values)
         cfg._assert_reader(self.env.user)
         key=getattr(request,'_mcp_key',None) if request else None
         if not key or not key.active or key.user_id!=cfg.user_id or operation=='upload' and key.scope!='write':
@@ -231,7 +231,7 @@ class Transfer(models.Model):
         cfg=config(self.env)
         candidate=self.sudo().search([('token_hash','=',self.env['muk_mcp.key']._hash_key(token)),('operation','=',operation)],limit=1)
         key=candidate.mcp_key_id
-        if (not cfg or cfg.access_mode!='organization' or not cfg._ready() or not key or not key.active
+        if (not cfg or cfg.access_mode not in ('organization','personal') or not cfg._ready() or not key or not key.active
             or key.user_id!=cfg.user_id or key.expires_at and key.expires_at<=fields.Datetime.now()
             or not key.expires_at and not cfg.continuous):return self.browse()
         return super()._redeem(token,operation)

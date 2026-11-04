@@ -6,6 +6,7 @@ from odoo.exceptions import AccessDenied, AccessError, ValidationError
 from odoo.tests import TransactionCase, tagged
 from odoo.addons.platform_bridge.models import bridge, access, sync
 from odoo.addons.platform_bridge import socket_guard
+from odoo.addons.platform_bridge.controllers import login as login_controller
 
 
 @tagged('post_install','-at_install')
@@ -137,6 +138,18 @@ class TestBridge(TransactionCase):
         self.assertTrue(user.partner_id.image_1920)
         again=anonymous['pe.bridge.config']._provision(identity,'j'*43)
         self.assertEqual(again,user)
+
+    def test_sso_personal_destination_is_an_enum_not_an_open_redirect(self):
+        import inspect
+        from urllib.parse import urlsplit,parse_qs
+        self.config.write({'enabled':True})
+        for purpose in ('mcp','https://foreign.invalid'):
+            fake=SimpleNamespace(env=self.env,session={},redirect=lambda url,*a,**kw:SimpleNamespace(headers={},location=url))
+            with patch.object(login_controller,'request',fake),patch.object(login_controller,'ensure_db',lambda:None):
+                response=inspect.unwrap(login_controller.Login.start)(login_controller.Login(),purpose=purpose,next='https://foreign.invalid')
+            self.assertEqual(fake.session['pe_login_intent']['personal_mcp'],purpose=='mcp')
+            self.assertTrue(response.location.startswith(bridge.ORIGIN+'/authorize?'))
+            self.assertEqual(parse_qs(urlsplit(response.location).query)['redirect_uri'],[bridge.CALLBACK])
 
     def test_organization_cannot_be_rebound_over_existing_accounts(self):
         with self.assertRaises(ValidationError):self.config.write({'org_id':22})

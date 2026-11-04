@@ -15,7 +15,7 @@ FIELDS={
  'crm.team':'user_id',
  'crm.tag':'color',
  'crm.lost.reason':'',
- 'res.partner':'is_company parent_id type street street2 city zip country_id state_id email phone website vat category_id comment customer_rank supplier_rank',
+ 'res.partner':'is_company parent_id type street street2 city zip country_id state_id email phone website vat category_id comment customer_rank supplier_rank pe_first_name pe_last_name pe_mobile_phone pe_company',
  'res.partner.category':'color parent_id',
  'res.users':'',
  'res.company':'currency_id country_id',

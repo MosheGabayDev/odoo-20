@@ -78,7 +78,7 @@ class Tool(models.Model):
 
     def get_tools(self,registry=None):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super().get_tools(registry)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super().get_tools(registry)
         index=get_tool_index(self.env,registry=registry)
         result=[]
         for tool in MCPTool.get_tools(self,registry):
@@ -92,19 +92,19 @@ class Tool(models.Model):
             if 'offset' in props:props['offset']={'type':'integer','minimum':0,'maximum':10000,'default':0}
             if 'order' in props:props['order']={'type':'string',**({'default':'id'} if tool['name']=='search_read' else {})}
             if 'ids' in props:props['ids']={'type':'array','items':{'type':'integer','minimum':1},'minItems':1,'maxItems':MAX_RECORDS}
-            tool['description']='Organization-1 business service; private user contacts and technical administration excluded. '+tool['description']
+            tool['description']=('Personal organization-1 identity; own permitted private data and business scope; technical administration excluded. ' if cfg.access_mode=='personal' else 'Organization-1 business service; private user contacts and technical administration excluded. ')+tool['description']
             result.append(tool)
         return result
 
     def _call(self,name,arguments,env,enforce_scope=None):
         cfg=config(env)
-        if not cfg or cfg.access_mode!='organization':return super()._call(name,arguments,env,enforce_scope)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._call(name,arguments,env,enforce_scope)
         cfg._assert_reader(env.user)
         return MCPTool._call(self,name,arguments,env,enforce_scope=enforce_scope)
 
     def _execute(self,name,arguments,env,enforce_scope):
         cfg=config(env)
-        if not cfg or cfg.access_mode!='organization':return super()._execute(name,arguments,env,enforce_scope)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._execute(name,arguments,env,enforce_scope)
         cfg._assert_reader(env.user)
         entry=get_tool_index(env).get(name)
         if name not in TOOLS or not entry or entry['kind']!='method':raise AccessError('Tool is not a reviewed built-in business tool.')
@@ -193,9 +193,10 @@ class Tool(models.Model):
         elif name=='describe_model':
             special=env[model].fields_get(args['fields'],['string','type','required','readonly','relation','selection','help'])
         elif name=='get_access_rights':
-            special={'model':model,'current_user_rights':{op:bool(env[model].has_access(op)) and (op=='read' or model in WRITE) for op in ('read','write','create','unlink')},'organization':cfg.org_id,'privacy':'Business scope only; private user contacts excluded'}
+            special={'model':model,'current_user_rights':{op:bool(env[model].has_access(op)) and (op=='read' or model in WRITE) for op in ('read','write','create','unlink')},'organization':cfg.org_id,'privacy':'Own permitted private data and shared business scope' if cfg.access_mode=='personal' else 'Business scope only; private user contacts excluded'}
         elif name=='whoami':
             special={'user_id':env.uid,'name':env.user.name,'organization':cfg.org_id,'company_id':cfg.company_id.id,'company_name':cfg.company_id.name,'identity':'Dedicated organization business service; not a personal SSO session','continuous_access':cfg.continuous}
+            if cfg.access_mode=='personal':special.update(identity='Personal Platform Engineer identity',personal=True,native_subject=env.user.sudo().pe_subject,native_user_id=env.user.sudo().pe_user_id)
         elif name=='system_info':
             special={'product':release.product_name,'version':release.version,'edition':'community','base_url':'https://odoo.test.ai-data-platform.com','organization':cfg.org_id,'company_id':cfg.company_id.id}
         if name=='list_modules' and args.get('state','installed')!='installed':raise AccessError('Only installed application discovery is exposed.')
@@ -208,27 +209,27 @@ class Mixin(models.AbstractModel):
 
     def _resolve_model(self,model):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._resolve_model(model)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._resolve_model(model)
         cfg._assert_reader(self.env.user)
         if model not in READ:raise AccessError('Technical or private model is not exposed.')
         return AccessMixin._resolve_model(self,model)
 
     def _mcp_apply_domain(self,model,domain):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._mcp_apply_domain(model,domain)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._mcp_apply_domain(model,domain)
         base=AccessMixin._mcp_apply_domain(self,model,domain)
         return list(Domain(base or [])&Domain(self.env.user._mcp_org_domain(model,self.env.context.get('mcp_tool_category')=='write')))
 
     def _mcp_assert_records_allowed(self,model,ids):
         cfg=config(self.env)
-        if not cfg or cfg.access_mode!='organization':return super()._mcp_assert_records_allowed(model,ids)
+        if not cfg or cfg.access_mode not in ('organization','personal'):return super()._mcp_assert_records_allowed(model,ids)
         if ids:assert_records(self.env,model,list(ids),self.env.context.get('mcp_tool_category')=='write')
         return AccessMixin._mcp_assert_records_allowed(self,model,ids)
 
     def _resolve_resource_target(self,uri):
         record,field=super()._resolve_resource_target(uri)
         cfg=config(self.env)
-        if cfg and cfg.access_mode=='organization':
+        if cfg and cfg.access_mode in ('organization','personal'):
             if record._name=='ir.attachment':assert_records(self.env,'ir.attachment',record.ids)
             elif field not in field_names(self.env,record._name):raise AccessError('Binary field is outside approved business fields.')
             if record._name!='ir.attachment':assert_records(self.env,record._name,record.ids)
@@ -237,5 +238,5 @@ class Mixin(models.AbstractModel):
     def _resolve_resource_uri(self,uri):
         result=super()._resolve_resource_uri(uri)
         cfg=config(self.env)
-        if cfg and cfg.access_mode=='organization' and len(result[1])>MAX_FILE_BYTES:raise AccessError('Resource exceeds five MiB.')
+        if cfg and cfg.access_mode in ('organization','personal') and len(result[1])>MAX_FILE_BYTES:raise AccessError('Resource exceeds five MiB.')
         return result

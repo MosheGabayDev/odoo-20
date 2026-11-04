@@ -21,7 +21,8 @@ class Login(Controller):
         if not config.enabled or config.org_id<=0:
             return request.redirect('/web/login?pe_error=unavailable',303)
         state,verifier=secrets.token_urlsafe(32),secrets.token_urlsafe(32)
-        request.session['pe_login_intent']=dict(state=state,verifier=verifier,at=time.time())
+        # A single reviewed product destination, never an arbitrary return URL.
+        request.session['pe_login_intent']=dict(state=state,verifier=verifier,at=time.time(),personal_mcp=kwargs.get('purpose')=='mcp')
         challenge=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
         response=request.redirect(ORIGIN+'/authorize?'+urlencode(dict(client_id=CLIENT,
             response_type='code',redirect_uri=CALLBACK,state=state,
@@ -55,7 +56,8 @@ class Login(Controller):
             request.session['pe_login_grant']=login_grant
         except AccessDenied:
             return request.redirect('/web/login?pe_error=access',303)
-        result=request.redirect(_get_login_redirect_url(user.id,'/odoo/contacts'),303)
+        destination='/platform/mcp/connect' if intent.get('personal_mcp') is True else '/odoo/contacts'
+        result=request.redirect(_get_login_redirect_url(user.id,destination),303)
         result.headers['Cache-Control']='no-store'
         result.headers['Referrer-Policy']='no-referrer'
         return result

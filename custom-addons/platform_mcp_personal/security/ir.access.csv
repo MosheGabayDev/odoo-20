@@ -1,0 +1,73 @@
+id,name,model_id,group_id/id,operation,domain
+personal_org_read_0,Personal Organization MCP project.project,project.project,platform_mcp_personal.group_personal,r,user._mcp_org_domain('project.project')
+personal_org_write_0,Personal Organization MCP edit project.project,project.project,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('project.project',True)"
+personal_org_read_1,Personal Organization MCP project.task,project.task,platform_mcp_personal.group_personal,r,user._mcp_org_domain('project.task')
+personal_org_write_1,Personal Organization MCP edit project.task,project.task,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('project.task',True)"
+personal_org_read_2,Personal Organization MCP project.task.type,project.task.type,platform_mcp_personal.group_personal,r,user._mcp_org_domain('project.task.type')
+personal_org_write_2,Personal Organization MCP edit project.task.type,project.task.type,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('project.task.type',True)"
+personal_org_read_3,Personal Organization MCP project.tags,project.tags,platform_mcp_personal.group_personal,r,user._mcp_org_domain('project.tags')
+personal_org_write_3,Personal Organization MCP edit project.tags,project.tags,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('project.tags',True)"
+personal_org_read_4,Personal Organization MCP crm.lead,crm.lead,platform_mcp_personal.group_personal,r,user._mcp_org_domain('crm.lead')
+personal_org_write_4,Personal Organization MCP edit crm.lead,crm.lead,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('crm.lead',True)"
+personal_org_read_5,Personal Organization MCP crm.stage,crm.stage,platform_mcp_personal.group_personal,r,user._mcp_org_domain('crm.stage')
+personal_org_write_5,Personal Organization MCP edit crm.stage,crm.stage,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('crm.stage',True)"
+personal_org_read_6,Personal Organization MCP crm.team,crm.team,platform_mcp_personal.group_personal,r,user._mcp_org_domain('crm.team')
+personal_org_write_6,Personal Organization MCP edit crm.team,crm.team,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('crm.team',True)"
+personal_org_read_7,Personal Organization MCP crm.tag,crm.tag,platform_mcp_personal.group_personal,r,user._mcp_org_domain('crm.tag')
+personal_org_write_7,Personal Organization MCP edit crm.tag,crm.tag,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('crm.tag',True)"
+personal_org_read_8,Personal Organization MCP crm.lost.reason,crm.lost.reason,platform_mcp_personal.group_personal,r,user._mcp_org_domain('crm.lost.reason')
+personal_org_write_8,Personal Organization MCP edit crm.lost.reason,crm.lost.reason,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('crm.lost.reason',True)"
+personal_org_read_9,Personal Organization MCP res.partner,res.partner,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.partner')
+personal_org_write_9,Personal Organization MCP edit res.partner,res.partner,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('res.partner',True)"
+personal_org_read_10,Personal Organization MCP res.partner.category,res.partner.category,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.partner.category')
+personal_org_write_10,Personal Organization MCP edit res.partner.category,res.partner.category,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('res.partner.category',True)"
+personal_org_read_11,Personal Organization MCP res.users,res.users,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.users')
+personal_org_read_12,Personal Organization MCP res.company,res.company,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.company')
+personal_org_read_13,Personal Organization MCP res.country,res.country,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.country')
+personal_org_read_14,Personal Organization MCP res.country.state,res.country.state,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.country.state')
+personal_org_read_15,Personal Organization MCP res.currency,res.currency,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.currency')
+personal_org_read_16,Personal Organization MCP res.lang,res.lang,platform_mcp_personal.group_personal,r,user._mcp_org_domain('res.lang')
+personal_org_read_17,Personal Organization MCP product.template,product.template,platform_mcp_personal.group_personal,r,user._mcp_org_domain('product.template')
+personal_org_write_17,Personal Organization MCP edit product.template,product.template,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('product.template',True)"
+personal_org_read_18,Personal Organization MCP product.product,product.product,platform_mcp_personal.group_personal,r,user._mcp_org_domain('product.product')
+personal_org_write_18,Personal Organization MCP edit product.product,product.product,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('product.product',True)"
+personal_org_read_19,Personal Organization MCP product.category,product.category,platform_mcp_personal.group_personal,r,user._mcp_org_domain('product.category')
+personal_org_write_19,Personal Organization MCP edit product.category,product.category,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('product.category',True)"
+personal_org_read_20,Personal Organization MCP product.pricelist,product.pricelist,platform_mcp_personal.group_personal,r,user._mcp_org_domain('product.pricelist')
+personal_org_write_20,Personal Organization MCP edit product.pricelist,product.pricelist,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('product.pricelist',True)"
+personal_org_read_21,Personal Organization MCP uom.uom,uom.uom,platform_mcp_personal.group_personal,r,user._mcp_org_domain('uom.uom')
+personal_org_read_22,Personal Organization MCP sale.order,sale.order,platform_mcp_personal.group_personal,r,user._mcp_org_domain('sale.order')
+personal_org_write_22,Personal Organization MCP edit sale.order,sale.order,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('sale.order',True)"
+personal_org_read_23,Personal Organization MCP sale.order.line,sale.order.line,platform_mcp_personal.group_personal,r,user._mcp_org_domain('sale.order.line')
+personal_org_write_23,Personal Organization MCP edit sale.order.line,sale.order.line,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('sale.order.line',True)"
+personal_org_read_24,Personal Organization MCP account.move,account.move,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.move')
+personal_org_write_24,Personal Organization MCP edit account.move,account.move,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.move',True)"
+personal_org_read_25,Personal Organization MCP account.move.line,account.move.line,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.move.line')
+personal_org_write_25,Personal Organization MCP edit account.move.line,account.move.line,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.move.line',True)"
+personal_org_read_26,Personal Organization MCP account.journal,account.journal,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.journal')
+personal_org_write_26,Personal Organization MCP edit account.journal,account.journal,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.journal',True)"
+personal_org_read_27,Personal Organization MCP account.account,account.account,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.account')
+personal_org_write_27,Personal Organization MCP edit account.account,account.account,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.account',True)"
+personal_org_read_28,Personal Organization MCP account.tax,account.tax,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.tax')
+personal_org_write_28,Personal Organization MCP edit account.tax,account.tax,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.tax',True)"
+personal_org_read_29,Personal Organization MCP account.tax.group,account.tax.group,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.tax.group')
+personal_org_write_29,Personal Organization MCP edit account.tax.group,account.tax.group,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.tax.group',True)"
+personal_org_read_30,Personal Organization MCP account.payment.term,account.payment.term,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.payment.term')
+personal_org_write_30,Personal Organization MCP edit account.payment.term,account.payment.term,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.payment.term',True)"
+personal_org_read_31,Personal Organization MCP account.analytic.account,account.analytic.account,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.analytic.account')
+personal_org_write_31,Personal Organization MCP edit account.analytic.account,account.analytic.account,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.analytic.account',True)"
+personal_org_read_32,Personal Organization MCP account.analytic.plan,account.analytic.plan,platform_mcp_personal.group_personal,r,user._mcp_org_domain('account.analytic.plan')
+personal_org_write_32,Personal Organization MCP edit account.analytic.plan,account.analytic.plan,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('account.analytic.plan',True)"
+personal_org_read_33,Personal Organization MCP calendar.event,calendar.event,platform_mcp_personal.group_personal,r,user._mcp_org_domain('calendar.event')
+personal_org_write_33,Personal Organization MCP edit calendar.event,calendar.event,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('calendar.event',True)"
+personal_org_read_34,Personal Organization MCP mail.activity,mail.activity,platform_mcp_personal.group_personal,r,user._mcp_org_domain('mail.activity')
+personal_org_write_34,Personal Organization MCP edit mail.activity,mail.activity,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('mail.activity',True)"
+personal_org_read_35,Personal Organization MCP mail.activity.type,mail.activity.type,platform_mcp_personal.group_personal,r,user._mcp_org_domain('mail.activity.type')
+personal_org_read_36,Personal Organization MCP ir.attachment,ir.attachment,platform_mcp_personal.group_personal,r,user._mcp_org_domain('ir.attachment')
+personal_org_write_36,Personal Organization MCP edit ir.attachment,ir.attachment,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('ir.attachment',True)"
+personal_org_read_37,Personal Organization MCP utm.source,utm.source,platform_mcp_personal.group_personal,r,user._mcp_org_domain('utm.source')
+personal_org_write_37,Personal Organization MCP edit utm.source,utm.source,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('utm.source',True)"
+personal_org_read_38,Personal Organization MCP utm.medium,utm.medium,platform_mcp_personal.group_personal,r,user._mcp_org_domain('utm.medium')
+personal_org_write_38,Personal Organization MCP edit utm.medium,utm.medium,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('utm.medium',True)"
+personal_org_read_39,Personal Organization MCP utm.campaign,utm.campaign,platform_mcp_personal.group_personal,r,user._mcp_org_domain('utm.campaign')
+personal_org_write_39,Personal Organization MCP edit utm.campaign,utm.campaign,platform_mcp_personal.group_personal,cud,"user._mcp_org_domain('utm.campaign',True)"

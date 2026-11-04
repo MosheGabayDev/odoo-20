@@ -71,7 +71,7 @@ class Config(models.Model):
 
     @api.model
     def _call(self, endpoint, *, grant=None, data=None, params=None, method='POST',missing_ok=False):
-        if endpoint not in ('/token','/introspect','/scope','/contacts','/contacts/apply','/profile','/profile/apply') and not re.fullmatch(r'/effects/[a-zA-Z0-9_-]{20,100}',endpoint):
+        if endpoint not in ('/token','/introspect','/scope','/contacts','/contacts/apply','/profile','/profile/apply','/mcp/token','/mcp/introspect','/mcp/revoke','/mcp/contacts') and not re.fullmatch(r'/effects/[a-zA-Z0-9_-]{20,100}',endpoint):
             raise AccessDenied('Unsupported bridge operation')
         config=self._config()
         if not config.enabled or config.org_id<=0 or not config.client_secret:
@@ -84,7 +84,7 @@ class Config(models.Model):
                 session.trust_env=False
                 kwargs=dict(auth=(CLIENT,config.client_secret),headers=headers,
                             timeout=(3,8),allow_redirects=False,params=params)
-                if endpoint=='/token':kwargs['data']=data
+                if endpoint in ('/token','/mcp/token'):kwargs['data']=data
                 elif data is not None:kwargs['json']=data
                 response=session.request(method,ORIGIN+endpoint,**kwargs)
                 if missing_ok and endpoint.startswith('/effects/') and response.status_code==404:

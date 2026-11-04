@@ -19,10 +19,14 @@ class IrHttp(models.AbstractModel):
         return result
 
     @classmethod
+    def _pe_authenticate_scope(cls,env,session):
+        return authenticate_scope(env,session)
+
+    @classmethod
     def _authenticate(cls, endpoint):
         super()._authenticate(endpoint)
         try:
-            identity=authenticate_scope(request.env,request.session)
+            identity=cls._pe_authenticate_scope(request.env,request.session)
         except AccessDenied:
             logout(request.session,keep_db=True)
             raise SessionExpiredException('Platform authorization ended') from None
