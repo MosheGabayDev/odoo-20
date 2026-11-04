@@ -1,0 +1,11 @@
+<odoo noupdate="1">
+  <record id="security_monitor" model="ir.cron">
+    <field name="name">Organization MCP authority monitor</field>
+    <field name="model_id" ref="platform_mcp_guard.model_pe_mcp_config"/>
+    <field name="state">code</field>
+    <field name="code">model._monitor_security()</field>
+    <field name="interval_number">5</field>
+    <field name="interval_type">minutes</field>
+    <field name="active" eval="True"/>
+  </record>
+</odoo>

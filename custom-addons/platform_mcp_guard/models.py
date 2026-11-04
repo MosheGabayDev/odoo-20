@@ -119,7 +119,7 @@ class Keys(models.Model):
             raise AccessError('MCP key identity and scope are immutable; rotate the key.')
         if vals.get('active') and any(not key.active for key in self):
             raise AccessError('A revoked MCP key cannot be re-enabled; issue a new key.')
-        if 'expires_at' in vals and any(not vals['expires_at'] or fields.Datetime.to_datetime(vals['expires_at'])>key.expires_at for key in self):
+        if 'expires_at' in vals and any(not vals['expires_at'] or key.expires_at and fields.Datetime.to_datetime(vals['expires_at'])>key.expires_at for key in self):
             raise AccessError('MCP key expiry cannot be extended; rotate the key.')
         return super().write(vals)
 

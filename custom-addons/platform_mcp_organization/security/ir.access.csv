@@ -1,0 +1,163 @@
+id,name,model_id,group_id/id,operation,domain
+org_read_0,Organization MCP project.project,project.project,platform_mcp_organization.group_writer,r,user._mcp_org_domain('project.project')
+org_bound_read_0,Organization MCP boundary project.project,project.project,,r,user._mcp_restriction('project.project')
+org_bound_write_0,Organization MCP write boundary project.project,project.project,,cud,"user._mcp_restriction('project.project',True)"
+org_write_0,Organization MCP edit project.project,project.project,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('project.project',True)"
+org_read_1,Organization MCP project.task,project.task,platform_mcp_organization.group_writer,r,user._mcp_org_domain('project.task')
+org_bound_read_1,Organization MCP boundary project.task,project.task,,r,user._mcp_restriction('project.task')
+org_bound_write_1,Organization MCP write boundary project.task,project.task,,cud,"user._mcp_restriction('project.task',True)"
+org_write_1,Organization MCP edit project.task,project.task,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('project.task',True)"
+org_read_2,Organization MCP project.task.type,project.task.type,platform_mcp_organization.group_writer,r,user._mcp_org_domain('project.task.type')
+org_bound_read_2,Organization MCP boundary project.task.type,project.task.type,,r,user._mcp_restriction('project.task.type')
+org_bound_write_2,Organization MCP write boundary project.task.type,project.task.type,,cud,"user._mcp_restriction('project.task.type',True)"
+org_write_2,Organization MCP edit project.task.type,project.task.type,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('project.task.type',True)"
+org_read_3,Organization MCP project.tags,project.tags,platform_mcp_organization.group_writer,r,user._mcp_org_domain('project.tags')
+org_bound_read_3,Organization MCP boundary project.tags,project.tags,,r,user._mcp_restriction('project.tags')
+org_bound_write_3,Organization MCP write boundary project.tags,project.tags,,cud,"user._mcp_restriction('project.tags',True)"
+org_write_3,Organization MCP edit project.tags,project.tags,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('project.tags',True)"
+org_read_4,Organization MCP crm.lead,crm.lead,platform_mcp_organization.group_writer,r,user._mcp_org_domain('crm.lead')
+org_bound_read_4,Organization MCP boundary crm.lead,crm.lead,,r,user._mcp_restriction('crm.lead')
+org_bound_write_4,Organization MCP write boundary crm.lead,crm.lead,,cud,"user._mcp_restriction('crm.lead',True)"
+org_write_4,Organization MCP edit crm.lead,crm.lead,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('crm.lead',True)"
+org_read_5,Organization MCP crm.stage,crm.stage,platform_mcp_organization.group_writer,r,user._mcp_org_domain('crm.stage')
+org_bound_read_5,Organization MCP boundary crm.stage,crm.stage,,r,user._mcp_restriction('crm.stage')
+org_bound_write_5,Organization MCP write boundary crm.stage,crm.stage,,cud,"user._mcp_restriction('crm.stage',True)"
+org_write_5,Organization MCP edit crm.stage,crm.stage,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('crm.stage',True)"
+org_read_6,Organization MCP crm.team,crm.team,platform_mcp_organization.group_writer,r,user._mcp_org_domain('crm.team')
+org_bound_read_6,Organization MCP boundary crm.team,crm.team,,r,user._mcp_restriction('crm.team')
+org_bound_write_6,Organization MCP write boundary crm.team,crm.team,,cud,"user._mcp_restriction('crm.team',True)"
+org_write_6,Organization MCP edit crm.team,crm.team,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('crm.team',True)"
+org_read_7,Organization MCP crm.tag,crm.tag,platform_mcp_organization.group_writer,r,user._mcp_org_domain('crm.tag')
+org_bound_read_7,Organization MCP boundary crm.tag,crm.tag,,r,user._mcp_restriction('crm.tag')
+org_bound_write_7,Organization MCP write boundary crm.tag,crm.tag,,cud,"user._mcp_restriction('crm.tag',True)"
+org_write_7,Organization MCP edit crm.tag,crm.tag,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('crm.tag',True)"
+org_read_8,Organization MCP crm.lost.reason,crm.lost.reason,platform_mcp_organization.group_writer,r,user._mcp_org_domain('crm.lost.reason')
+org_bound_read_8,Organization MCP boundary crm.lost.reason,crm.lost.reason,,r,user._mcp_restriction('crm.lost.reason')
+org_bound_write_8,Organization MCP write boundary crm.lost.reason,crm.lost.reason,,cud,"user._mcp_restriction('crm.lost.reason',True)"
+org_write_8,Organization MCP edit crm.lost.reason,crm.lost.reason,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('crm.lost.reason',True)"
+org_read_9,Organization MCP res.partner,res.partner,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.partner')
+org_bound_read_9,Organization MCP boundary res.partner,res.partner,,r,user._mcp_restriction('res.partner')
+org_bound_write_9,Organization MCP write boundary res.partner,res.partner,,cud,"user._mcp_restriction('res.partner',True)"
+org_write_9,Organization MCP edit res.partner,res.partner,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('res.partner',True)"
+org_read_10,Organization MCP res.partner.category,res.partner.category,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.partner.category')
+org_bound_read_10,Organization MCP boundary res.partner.category,res.partner.category,,r,user._mcp_restriction('res.partner.category')
+org_bound_write_10,Organization MCP write boundary res.partner.category,res.partner.category,,cud,"user._mcp_restriction('res.partner.category',True)"
+org_write_10,Organization MCP edit res.partner.category,res.partner.category,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('res.partner.category',True)"
+org_read_11,Organization MCP res.users,res.users,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.users')
+org_bound_read_11,Organization MCP boundary res.users,res.users,,r,user._mcp_restriction('res.users')
+org_bound_write_11,Organization MCP write boundary res.users,res.users,,cud,"user._mcp_restriction('res.users',True)"
+org_read_12,Organization MCP res.company,res.company,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.company')
+org_bound_read_12,Organization MCP boundary res.company,res.company,,r,user._mcp_restriction('res.company')
+org_bound_write_12,Organization MCP write boundary res.company,res.company,,cud,"user._mcp_restriction('res.company',True)"
+org_read_13,Organization MCP res.country,res.country,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.country')
+org_bound_read_13,Organization MCP boundary res.country,res.country,,r,user._mcp_restriction('res.country')
+org_bound_write_13,Organization MCP write boundary res.country,res.country,,cud,"user._mcp_restriction('res.country',True)"
+org_read_14,Organization MCP res.country.state,res.country.state,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.country.state')
+org_bound_read_14,Organization MCP boundary res.country.state,res.country.state,,r,user._mcp_restriction('res.country.state')
+org_bound_write_14,Organization MCP write boundary res.country.state,res.country.state,,cud,"user._mcp_restriction('res.country.state',True)"
+org_read_15,Organization MCP res.currency,res.currency,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.currency')
+org_bound_read_15,Organization MCP boundary res.currency,res.currency,,r,user._mcp_restriction('res.currency')
+org_bound_write_15,Organization MCP write boundary res.currency,res.currency,,cud,"user._mcp_restriction('res.currency',True)"
+org_read_16,Organization MCP res.lang,res.lang,platform_mcp_organization.group_writer,r,user._mcp_org_domain('res.lang')
+org_bound_read_16,Organization MCP boundary res.lang,res.lang,,r,user._mcp_restriction('res.lang')
+org_bound_write_16,Organization MCP write boundary res.lang,res.lang,,cud,"user._mcp_restriction('res.lang',True)"
+org_read_17,Organization MCP product.template,product.template,platform_mcp_organization.group_writer,r,user._mcp_org_domain('product.template')
+org_bound_read_17,Organization MCP boundary product.template,product.template,,r,user._mcp_restriction('product.template')
+org_bound_write_17,Organization MCP write boundary product.template,product.template,,cud,"user._mcp_restriction('product.template',True)"
+org_write_17,Organization MCP edit product.template,product.template,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('product.template',True)"
+org_read_18,Organization MCP product.product,product.product,platform_mcp_organization.group_writer,r,user._mcp_org_domain('product.product')
+org_bound_read_18,Organization MCP boundary product.product,product.product,,r,user._mcp_restriction('product.product')
+org_bound_write_18,Organization MCP write boundary product.product,product.product,,cud,"user._mcp_restriction('product.product',True)"
+org_write_18,Organization MCP edit product.product,product.product,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('product.product',True)"
+org_read_19,Organization MCP product.category,product.category,platform_mcp_organization.group_writer,r,user._mcp_org_domain('product.category')
+org_bound_read_19,Organization MCP boundary product.category,product.category,,r,user._mcp_restriction('product.category')
+org_bound_write_19,Organization MCP write boundary product.category,product.category,,cud,"user._mcp_restriction('product.category',True)"
+org_write_19,Organization MCP edit product.category,product.category,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('product.category',True)"
+org_read_20,Organization MCP product.pricelist,product.pricelist,platform_mcp_organization.group_writer,r,user._mcp_org_domain('product.pricelist')
+org_bound_read_20,Organization MCP boundary product.pricelist,product.pricelist,,r,user._mcp_restriction('product.pricelist')
+org_bound_write_20,Organization MCP write boundary product.pricelist,product.pricelist,,cud,"user._mcp_restriction('product.pricelist',True)"
+org_write_20,Organization MCP edit product.pricelist,product.pricelist,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('product.pricelist',True)"
+org_read_21,Organization MCP uom.uom,uom.uom,platform_mcp_organization.group_writer,r,user._mcp_org_domain('uom.uom')
+org_bound_read_21,Organization MCP boundary uom.uom,uom.uom,,r,user._mcp_restriction('uom.uom')
+org_bound_write_21,Organization MCP write boundary uom.uom,uom.uom,,cud,"user._mcp_restriction('uom.uom',True)"
+org_read_22,Organization MCP sale.order,sale.order,platform_mcp_organization.group_writer,r,user._mcp_org_domain('sale.order')
+org_bound_read_22,Organization MCP boundary sale.order,sale.order,,r,user._mcp_restriction('sale.order')
+org_bound_write_22,Organization MCP write boundary sale.order,sale.order,,cud,"user._mcp_restriction('sale.order',True)"
+org_write_22,Organization MCP edit sale.order,sale.order,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('sale.order',True)"
+org_read_23,Organization MCP sale.order.line,sale.order.line,platform_mcp_organization.group_writer,r,user._mcp_org_domain('sale.order.line')
+org_bound_read_23,Organization MCP boundary sale.order.line,sale.order.line,,r,user._mcp_restriction('sale.order.line')
+org_bound_write_23,Organization MCP write boundary sale.order.line,sale.order.line,,cud,"user._mcp_restriction('sale.order.line',True)"
+org_write_23,Organization MCP edit sale.order.line,sale.order.line,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('sale.order.line',True)"
+org_read_24,Organization MCP account.move,account.move,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.move')
+org_bound_read_24,Organization MCP boundary account.move,account.move,,r,user._mcp_restriction('account.move')
+org_bound_write_24,Organization MCP write boundary account.move,account.move,,cud,"user._mcp_restriction('account.move',True)"
+org_write_24,Organization MCP edit account.move,account.move,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.move',True)"
+org_read_25,Organization MCP account.move.line,account.move.line,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.move.line')
+org_bound_read_25,Organization MCP boundary account.move.line,account.move.line,,r,user._mcp_restriction('account.move.line')
+org_bound_write_25,Organization MCP write boundary account.move.line,account.move.line,,cud,"user._mcp_restriction('account.move.line',True)"
+org_write_25,Organization MCP edit account.move.line,account.move.line,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.move.line',True)"
+org_read_26,Organization MCP account.journal,account.journal,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.journal')
+org_bound_read_26,Organization MCP boundary account.journal,account.journal,,r,user._mcp_restriction('account.journal')
+org_bound_write_26,Organization MCP write boundary account.journal,account.journal,,cud,"user._mcp_restriction('account.journal',True)"
+org_write_26,Organization MCP edit account.journal,account.journal,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.journal',True)"
+org_read_27,Organization MCP account.account,account.account,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.account')
+org_bound_read_27,Organization MCP boundary account.account,account.account,,r,user._mcp_restriction('account.account')
+org_bound_write_27,Organization MCP write boundary account.account,account.account,,cud,"user._mcp_restriction('account.account',True)"
+org_write_27,Organization MCP edit account.account,account.account,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.account',True)"
+org_read_28,Organization MCP account.tax,account.tax,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.tax')
+org_bound_read_28,Organization MCP boundary account.tax,account.tax,,r,user._mcp_restriction('account.tax')
+org_bound_write_28,Organization MCP write boundary account.tax,account.tax,,cud,"user._mcp_restriction('account.tax',True)"
+org_write_28,Organization MCP edit account.tax,account.tax,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.tax',True)"
+org_read_29,Organization MCP account.tax.group,account.tax.group,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.tax.group')
+org_bound_read_29,Organization MCP boundary account.tax.group,account.tax.group,,r,user._mcp_restriction('account.tax.group')
+org_bound_write_29,Organization MCP write boundary account.tax.group,account.tax.group,,cud,"user._mcp_restriction('account.tax.group',True)"
+org_write_29,Organization MCP edit account.tax.group,account.tax.group,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.tax.group',True)"
+org_read_30,Organization MCP account.payment.term,account.payment.term,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.payment.term')
+org_bound_read_30,Organization MCP boundary account.payment.term,account.payment.term,,r,user._mcp_restriction('account.payment.term')
+org_bound_write_30,Organization MCP write boundary account.payment.term,account.payment.term,,cud,"user._mcp_restriction('account.payment.term',True)"
+org_write_30,Organization MCP edit account.payment.term,account.payment.term,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.payment.term',True)"
+org_read_31,Organization MCP account.analytic.account,account.analytic.account,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.analytic.account')
+org_bound_read_31,Organization MCP boundary account.analytic.account,account.analytic.account,,r,user._mcp_restriction('account.analytic.account')
+org_bound_write_31,Organization MCP write boundary account.analytic.account,account.analytic.account,,cud,"user._mcp_restriction('account.analytic.account',True)"
+org_write_31,Organization MCP edit account.analytic.account,account.analytic.account,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.analytic.account',True)"
+org_read_32,Organization MCP account.analytic.plan,account.analytic.plan,platform_mcp_organization.group_writer,r,user._mcp_org_domain('account.analytic.plan')
+org_bound_read_32,Organization MCP boundary account.analytic.plan,account.analytic.plan,,r,user._mcp_restriction('account.analytic.plan')
+org_bound_write_32,Organization MCP write boundary account.analytic.plan,account.analytic.plan,,cud,"user._mcp_restriction('account.analytic.plan',True)"
+org_write_32,Organization MCP edit account.analytic.plan,account.analytic.plan,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('account.analytic.plan',True)"
+org_read_33,Organization MCP calendar.event,calendar.event,platform_mcp_organization.group_writer,r,user._mcp_org_domain('calendar.event')
+org_bound_read_33,Organization MCP boundary calendar.event,calendar.event,,r,user._mcp_restriction('calendar.event')
+org_bound_write_33,Organization MCP write boundary calendar.event,calendar.event,,cud,"user._mcp_restriction('calendar.event',True)"
+org_write_33,Organization MCP edit calendar.event,calendar.event,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('calendar.event',True)"
+org_read_34,Organization MCP mail.activity,mail.activity,platform_mcp_organization.group_writer,r,user._mcp_org_domain('mail.activity')
+org_bound_read_34,Organization MCP boundary mail.activity,mail.activity,,r,user._mcp_restriction('mail.activity')
+org_bound_write_34,Organization MCP write boundary mail.activity,mail.activity,,cud,"user._mcp_restriction('mail.activity',True)"
+org_read_35,Organization MCP mail.activity.type,mail.activity.type,platform_mcp_organization.group_writer,r,user._mcp_org_domain('mail.activity.type')
+org_bound_read_35,Organization MCP boundary mail.activity.type,mail.activity.type,,r,user._mcp_restriction('mail.activity.type')
+org_bound_write_35,Organization MCP write boundary mail.activity.type,mail.activity.type,,cud,"user._mcp_restriction('mail.activity.type',True)"
+org_read_36,Organization MCP ir.attachment,ir.attachment,platform_mcp_organization.group_writer,r,user._mcp_org_domain('ir.attachment')
+org_bound_read_36,Organization MCP boundary ir.attachment,ir.attachment,,r,user._mcp_restriction('ir.attachment')
+org_bound_write_36,Organization MCP write boundary ir.attachment,ir.attachment,,cud,"user._mcp_restriction('ir.attachment',True)"
+org_read_37,Organization MCP utm.source,utm.source,platform_mcp_organization.group_writer,r,user._mcp_org_domain('utm.source')
+org_bound_read_37,Organization MCP boundary utm.source,utm.source,,r,user._mcp_restriction('utm.source')
+org_bound_write_37,Organization MCP write boundary utm.source,utm.source,,cud,"user._mcp_restriction('utm.source',True)"
+org_write_37,Organization MCP edit utm.source,utm.source,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('utm.source',True)"
+org_read_38,Organization MCP utm.medium,utm.medium,platform_mcp_organization.group_writer,r,user._mcp_org_domain('utm.medium')
+org_bound_read_38,Organization MCP boundary utm.medium,utm.medium,,r,user._mcp_restriction('utm.medium')
+org_bound_write_38,Organization MCP write boundary utm.medium,utm.medium,,cud,"user._mcp_restriction('utm.medium',True)"
+org_write_38,Organization MCP edit utm.medium,utm.medium,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('utm.medium',True)"
+org_read_39,Organization MCP utm.campaign,utm.campaign,platform_mcp_organization.group_writer,r,user._mcp_org_domain('utm.campaign')
+org_bound_read_39,Organization MCP boundary utm.campaign,utm.campaign,,r,user._mcp_restriction('utm.campaign')
+org_bound_write_39,Organization MCP write boundary utm.campaign,utm.campaign,,cud,"user._mcp_restriction('utm.campaign',True)"
+org_write_39,Organization MCP edit utm.campaign,utm.campaign,platform_mcp_organization.group_writer,cud,"user._mcp_org_domain('utm.campaign',True)"
+org_message_read,Organization business chatter,mail.message,,r,user._mcp_restriction('mail.message')
+org_reference_company_0,Organization reference company account.analytic.plan,account.analytic.plan,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_1,Organization reference company account.tax.group,account.tax.group,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_2,Organization reference company crm.lost.reason,crm.lost.reason,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_3,Organization reference company crm.stage,crm.stage,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_4,Organization reference company crm.tag,crm.tag,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_5,Organization reference company product.category,product.category,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_6,Organization reference company project.tags,project.tags,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_7,Organization reference company res.partner.category,res.partner.category,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_8,Organization reference company utm.campaign,utm.campaign,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_9,Organization reference company utm.medium,utm.medium,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"
+org_reference_company_10,Organization reference company utm.source,utm.source,,crud,"['|',('mcp_company_id','=',False),('mcp_company_id','in',company_ids)]"

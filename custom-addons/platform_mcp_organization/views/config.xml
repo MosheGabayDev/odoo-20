@@ -1,0 +1,13 @@
+<odoo>
+ <record id="config_organization" model="ir.ui.view">
+  <field name="name">pe.mcp.config.organization</field><field name="model">pe.mcp.config</field>
+  <field name="inherit_id" ref="platform_mcp_guard.config_form"/>
+  <field name="arch" type="xml">
+   <xpath expr="//h1" position="replace"><h1>Odoo MCP access</h1></xpath>
+   <xpath expr="//p" position="replace"><p>Organization mode exposes approved business tools within one company. Private user contacts, identity administration and technical settings remain protected. Continuous keys stay valid until revoked.</p></xpath>
+   <xpath expr="//field[@name='project_id']" position="attributes"><attribute name="invisible">access_mode == 'organization'</attribute></xpath>
+   <xpath expr="//field[@name='task_ids']" position="attributes"><attribute name="invisible">access_mode == 'organization'</attribute></xpath>
+   <xpath expr="//field[@name='enabled']" position="after"><field name="access_mode"/><field name="org_id"/><field name="company_id"/><field name="continuous" invisible="access_mode != 'organization'"/><field name="security_status"/><field name="security_checked_at"/></xpath>
+  </field>
+ </record>
+</odoo>
