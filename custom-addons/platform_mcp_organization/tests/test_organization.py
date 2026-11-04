@@ -1,4 +1,5 @@
 import json
+import base64
 from datetime import timedelta
 from unittest.mock import patch
 from types import SimpleNamespace
@@ -69,6 +70,12 @@ class TestOrganizationMCP(TransactionCase):
         self.assertIn(self.task.id,[r['id'] for r in rows]);self.assertNotIn(self.foreign_task.id,[r['id'] for r in rows])
         self.assertTrue(self.call('read_records',{'model':'project.task','ids':self.foreign_task.ids,'fields':['name']})['isError'])
         self.assertNotIn(self.foreign_task.id,self.env['project.task'].with_user(self.user).search([]).ids)
+
+    def test_csv_export_uses_native_permission_and_keeps_record_scope(self):
+        self.assertTrue(self.user.has_group('base.group_allow_export'))
+        exported=self.data('export_records',{'model':'project.task','ids':self.task.ids,'fields':['id','name'],'format':'csv','delivery':'inline','limit':20})
+        self.assertIn(self.task.name,base64.b64decode(exported['content_base64']).decode('utf-8-sig'))
+        self.assertTrue(self.call('export_records',{'model':'project.task','ids':self.foreign_task.ids,'fields':['id','name'],'format':'csv','delivery':'inline','limit':20})['isError'])
 
     def test_private_projects_hidden(self):
         self.assertTrue(self.call('read_records',{'model':'project.project','ids':self.private_project.ids,'fields':['name']})['isError'])
