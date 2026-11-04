@@ -67,7 +67,7 @@ class Users(models.Model):
 
     def write(self,vals):
         group=self.env.ref('platform_mcp_guard.group_reader',raise_if_not_found=False)
-        readers=self.sudo().filtered(lambda user:group in user.group_ids) if group and vals.get('active') is False else self.browse()
+        readers=self.sudo().filtered(lambda user:user.has_group('platform_mcp_guard.group_reader')) if group and vals.get('active') is False else self.browse()
         result=super().write(vals)
         if readers:
             self.env['muk_mcp.key'].sudo().with_context(active_test=False).search([('user_id','in',readers.ids)]).write({'active':False})

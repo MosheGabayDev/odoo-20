@@ -90,7 +90,7 @@ class Tool(models.Model):
             if 'domain' in props:props['domain']={'type':'array','items':{},'maxItems':40,'default':[]}
             if 'limit' in props:props['limit']={'type':'integer','minimum':1,'maximum':MAX_RECORDS,'default':50}
             if 'offset' in props:props['offset']={'type':'integer','minimum':0,'maximum':10000,'default':0}
-            if 'order' in props:props['order']={'type':'string','default':'id'}
+            if 'order' in props:props['order']={'type':'string',**({'default':'id'} if tool['name']=='search_read' else {})}
             if 'ids' in props:props['ids']={'type':'array','items':{'type':'integer','minimum':1},'minItems':1,'maxItems':MAX_RECORDS}
             tool['description']='Organization-1 business service; private user contacts and technical administration excluded. '+tool['description']
             result.append(tool)
@@ -132,6 +132,15 @@ class Tool(models.Model):
         if 'groupby' in args:
             groupby=args['groupby'] if isinstance(args['groupby'],list) else [args['groupby']]
             if len(groupby)>5 or any(not isinstance(v,str) or v.split(':')[0] not in field_names(env,model) for v in groupby):raise AccessError('Invalid grouping.')
+            if any(':' in v and v.split(':')[1] not in ('hour','day','week','month','quarter','year') for v in groupby):raise AccessError('Invalid date grouping.')
+        if 'aggregates' in args:
+            aggregates=args['aggregates']
+            if not isinstance(aggregates,list) or len(aggregates)>20:raise AccessError('Invalid aggregates.')
+            for aggregate in aggregates:
+                if aggregate=='__count':continue
+                parts=aggregate.split(':') if isinstance(aggregate,str) else []
+                if len(parts)!=2 or parts[0] not in field_names(env,model) or parts[1] not in ('sum','avg','min','max','count','count_distinct'):
+                    raise AccessError('Aggregate field is outside business permissions.')
         if 'domain' in args:
             domain=coerce_json_value(args['domain']) or []
             if not isinstance(domain,list) or len(domain)>40:raise AccessError('Invalid bounded query domain.')

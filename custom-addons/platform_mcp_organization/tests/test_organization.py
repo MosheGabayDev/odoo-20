@@ -151,6 +151,9 @@ class TestOrganizationMCP(TransactionCase):
         self.assertNotIn('pe_contact_key',meta)
         self.assertTrue(self.call('describe_model',{'model':'res.users','fields':['password']})['isError'])
         self.assertTrue(self.call('search_read',{'model':'project.task','domain':[['partner_id.email','ilike','x']],'fields':['id']})['isError'])
+        self.assertTrue(self.call('read_group',{'model':'res.users','aggregates':['password:max']})['isError'])
+        groups=self.data('read_group',{'model':'project.task','groupby':['state'],'aggregates':['__count']})
+        self.assertTrue(groups)
 
     def test_global_reference_is_company_stamped(self):
         row=self.data('create_records',{'model':'crm.tag','values':{'name':'Synthetic scoped tag'}})

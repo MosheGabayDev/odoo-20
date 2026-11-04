@@ -95,6 +95,8 @@ class Users(models.Model):
             if 'company_id' in self.env[model]._fields:domain &= Domain('company_id','=',company) if write else Domain('company_id','in',[False,company])
             if 'team_id' in self.env[model]._fields:domain &= Domain(['|',('team_id','=',False),('team_id','access','read')])
             if model=='utm.campaign':domain &= Domain(['|',('user_id','=',False),('user_id.company_id','=',company)])
+            if 'parent_id' in self.env[model]._fields and self.env[model]._fields['parent_id'].comodel_name==model:
+                domain &= Domain(['|',('parent_id','=',False),('parent_id.mcp_company_id','in',[False,company])])
             return list(domain)
         if model not in READ:return FALSE
         target=self.env[model]
@@ -109,9 +111,10 @@ class Users(models.Model):
             result &= Domain(['|',('privacy_visibility','in',['employees','portal']),('allowed_internal_user_ids','in',[self.id])])
         if model=='project.task':
             result &= Domain(['|',('project_id','access','read'),'&',('project_id','=',False),('user_ids','in',[self.id])])
+            result &= Domain(['|',('parent_id','=',False),'&',('parent_id.company_id','=',company),'|',('parent_id.project_id','access','read'),'&',('parent_id.project_id','=',False),('parent_id.user_ids','in',[self.id])])
         for field_name in READ[model]:
             field=target._fields.get(field_name)
-            if field and field.type=='many2one' and field.comodel_name=='res.partner':
+            if field and field.type=='many2one' and field.comodel_name in READ and field.comodel_name not in (model,'res.users'):
                 result &= Domain(['|',(field_name,'=',False),(field_name,'access','read')])
         if model=='sale.order.line':result &= Domain('order_id','access','read')
         if model=='account.move.line':result &= Domain('move_id','access','read')
