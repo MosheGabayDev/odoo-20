@@ -127,7 +127,7 @@ class Keys(models.Model):
     expires_at=fields.Datetime(required=False,readonly=True,default=expiry)
     personal_grant_cipher=fields.Char(copy=False,readonly=True,prefetch=False,groups=fields.NO_ACCESS)
     personal_consent_id=fields.Char(copy=False,readonly=True,groups=fields.NO_ACCESS)
-    personal_delivery_ciphertext=fields.Binary(copy=False,readonly=True,groups=fields.NO_ACCESS)
+    personal_delivery_ciphertext=fields.Binary(attachment=False,copy=False,readonly=True,groups=fields.NO_ACCESS)
 
     def _personal_scope(self):
         self.ensure_one();cfg=config(self.env)

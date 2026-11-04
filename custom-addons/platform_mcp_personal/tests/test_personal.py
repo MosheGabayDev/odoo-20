@@ -141,6 +141,17 @@ class TestPersonalMCP(TransactionCase):
         self.assertFalse(key.expires_at);self.assertEqual(len(raw),43)
         self.assertNotIn('g'*43,key.sudo().personal_grant_cipher)
 
+    def test_clone_neutralization_clears_inline_personal_delivery_and_authority(self):
+        from odoo.tools import file_open
+        self.assertFalse(self.key._fields['personal_delivery_ciphertext'].attachment)
+        self.key.sudo().write({'personal_delivery_ciphertext':b'Y2lwaGVydGV4dA=='})
+        with file_open('platform_mcp_personal/data/neutralize.sql') as source:
+            self.env.cr.execute(source.read())
+        self.key.invalidate_recordset()
+        self.assertFalse(self.key.active)
+        self.assertFalse(self.key.sudo().personal_grant_cipher)
+        self.assertFalse(self.key.sudo().personal_delivery_ciphertext)
+
     def test_grant_and_delivery_are_not_exposed_to_personal_user(self):
         for field in ['personal_grant_cipher','personal_consent_id','personal_delivery_ciphertext']:
             with self.assertRaises(AccessError):self.key.with_user(self.one).read([field])
