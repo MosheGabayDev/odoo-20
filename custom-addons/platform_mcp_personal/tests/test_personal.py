@@ -93,6 +93,18 @@ class TestPersonalMCP(TransactionCase):
         self.assertTrue(self.call('create_records',{'model':'crm.lead','values':{'name':'Synthetic denied','partner_id':self.other.id}})['isError'])
         self.assertTrue(self.call('read_records',{'model':'project.task','ids':self.foreign_task.ids,'fields':['id','name']})['isError'])
 
+    def test_own_native_private_task_without_company_is_supported_and_other_owner_denied(self):
+        tasks=self.env['project.task'].sudo().with_context(**QUIET)
+        own=tasks.create(dict(name='Synthetic own native private task',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)]))
+        other=tasks.create(dict(name='Synthetic other native private task',project_id=False,company_id=False,user_ids=[fields.Command.set(self.two.ids)]))
+        unsafe=tasks.create(dict(name='Synthetic private foreign relation',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)],partner_id=self.other.id))
+        child=tasks.create(dict(name='Synthetic private foreign parent',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)],parent_id=other.id))
+        self.assertEqual(self.data('read_records',{'model':'project.task','ids':own.ids,'fields':['id','name']})[0]['id'],own.id)
+        self.data('update_records',{'model':'project.task','ids':own.ids,'values':{'priority':'1'}})
+        self.assertEqual(own.priority,'1')
+        for denied in (other,unsafe,child):
+            self.assertTrue(self.call('read_records',{'model':'project.task','ids':denied.ids,'fields':['id','name']})['isError'])
+
     def test_business_crud_works_for_selected_personal_identity(self):
         row=self.data('create_records',{'model':'project.task','values':{'name':'Synthetic personal CRUD','project_id':self.project.id}})
         self.data('update_records',{'model':'project.task','ids':[row['id']],'values':{'priority':'1'}})

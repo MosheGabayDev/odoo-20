@@ -105,7 +105,22 @@ class Users(models.Model):
             shared=common & Domain([('pe_visibility','=','org'),('pe_is_profile','=',False),('pe_contact_key','in',ids)])
             local=Domain([('mcp_shared','=',True),('company_id','=',company),('pe_managed','=',False),('type','!=','private'),('user_ids','=',False)])
             return list(own|shared|local|Domain('id','in',[self.partner_id.id,cfg.company_id.partner_id.id]))
-        return super()._mcp_org_domain(model,write)
+        result=super()._mcp_org_domain(model,write)
+        if model=='project.task':
+            # Native personal tasks (including Welcome) intentionally have no
+            # company/project. Admit only this actor's assigned private tasks;
+            # keep the same reference/privacy boundaries as business tasks.
+            own=Domain([('company_id','=',False),('project_id','=',False),('user_ids','in',[self.id])])
+            parent=Domain('parent_id','=',False) | Domain([
+                ('parent_id.company_id','in',[False,company]),('parent_id.project_id','=',False),('parent_id.user_ids','in',[self.id])]) | Domain([
+                ('parent_id.company_id','=',company),('parent_id.project_id','access','read')])
+            own &= parent
+            for name in READ[model]:
+                field=self.env[model]._fields.get(name)
+                if field and field.type=='many2one' and field.comodel_name in READ and field.comodel_name not in (model,'res.users'):
+                    own &= Domain(['|',(name,'=',False),(name,'access','read')])
+            return list(Domain(result)|own)
+        return result
 
     def _pe_partner_domain(self,operation):
         result=super()._pe_partner_domain(operation);cfg=config(self.env)
