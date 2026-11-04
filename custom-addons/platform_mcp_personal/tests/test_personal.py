@@ -145,6 +145,8 @@ class TestPersonalMCP(TransactionCase):
         from odoo.tools import file_open
         self.assertFalse(self.key._fields['personal_delivery_ciphertext'].attachment)
         self.key.sudo().write({'personal_delivery_ciphertext':b'Y2lwaGVydGV4dA=='})
+        # CLI neutralization sees committed storage, not pending ORM writes.
+        self.env.flush_all()
         with file_open('platform_mcp_personal/data/neutralize.sql') as source:
             self.env.cr.execute(source.read())
         self.key.invalidate_recordset()
