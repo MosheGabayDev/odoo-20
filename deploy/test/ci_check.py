@@ -77,7 +77,27 @@ env.cr.commit()
             controller.write_compose(restored,preview=False)
             controller.smoke(restored)
             controller.dc(restored,'exec','-T','app','python','-c',
-                "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:8072/websocket/health',timeout=10).status==200; print('Public-mode gevent readiness passed')")
+                "import urllib.request,time\n"
+                "deadline=time.monotonic()+60\n"
+                "while time.monotonic()<deadline:\n"
+                " try:\n"
+                "  assert urllib.request.urlopen('http://127.0.0.1:8072/websocket/health',timeout=2).status==200\n"
+                "  print('Public-mode gevent readiness passed');break\n"
+                " except Exception:time.sleep(1)\n"
+                "else:raise RuntimeError('Public-mode gevent did not become healthy within60seconds')")
+        except Exception:
+            # Only disposable synthetic CI data. Preserve diagnostics before the
+            # temporary release is retired, and redact all generated credentials.
+            if restored:
+                parts=[]
+                error=controller.path(restored)/'last-command-error.log'
+                if error.exists():parts.append(error.read_text(errors='replace'))
+                try:parts.append(controller.dc(restored,'logs','--tail','100','app'))
+                except Exception:pass
+                diagnostic='\n'.join(parts)
+                for name in SECRETS:diagnostic=diagnostic.replace((secret_dir/name).read_text().strip(),'[fixture credential redacted]')
+                print(diagnostic,flush=True)
+            raise
         finally:
             if restored:
                 assert pathlib.Path(restored['directory']).is_relative_to(work/'releases')
