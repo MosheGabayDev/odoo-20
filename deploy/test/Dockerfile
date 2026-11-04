@@ -32,6 +32,20 @@ pathlib.Path('/opt/odoo/VENDOR_ADDONS.json').write_text(json.dumps(pin,sort_keys
 shutil.rmtree(root)
 PY
 RUN pip install --no-cache-dir -r /opt/odoo/requirements.txt
+RUN pip install --no-cache-dir pdfminer.six==20260107 markdown2==2.5.5 && pip check
+RUN python - <<'PY'
+import hashlib,pathlib,platform,subprocess,urllib.request,shutil
+assert platform.machine()=='x86_64','Reviewed PDF renderer is pinned for the TEST amd64 architecture'
+url='https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb'
+expected='98ba0d157b50d36f23bd0dedf4c0aa28c7b0c50fcdcdc54aa5b6bbba81a3941d'
+deb=pathlib.Path('/tmp/wkhtmltox.deb')
+with urllib.request.urlopen(url,timeout=120) as source,deb.open('wb') as target:shutil.copyfileobj(source,target)
+assert hashlib.sha256(deb.read_bytes()).hexdigest()==expected,'PDF renderer digest changed'
+subprocess.run(['apt-get','update'],check=True)
+subprocess.run(['apt-get','install','-y','--no-install-recommends',str(deb)],check=True)
+deb.unlink();shutil.rmtree('/var/lib/apt/lists')
+assert 'with patched qt' in subprocess.check_output(['wkhtmltopdf','--version'],text=True).lower()
+PY
 RUN groupadd --gid 10001 odoo && useradd --uid 10001 --gid 10001 --home-dir /var/lib/odoo odoo \
     && mkdir -p /var/lib/odoo && chown 10001:10001 /var/lib/odoo
 COPY --chmod=0444 runtime.py /usr/local/bin/odoo-runtime.py

@@ -176,7 +176,12 @@ class Tool(models.Model):
                 if candidate and candidate._name=='ir.actions.report':approved|=candidate
             if not report or report not in approved:
                 raise AccessError('Only reviewed sale and invoice business reports are enabled.')
-            assert_records(env,report.model,args['ids'])
+            records=assert_records(env,report.model,args['ids'])
+            for record in records:
+                for field_name in ('note','narration'):
+                    html=str(record[field_name] or '') if field_name in record._fields else ''
+                    if re.search(r'<\s*(script|iframe|object|embed|svg|video|audio|source|link)\b|(?:src|srcset|background)\s*=|url\s*\(',html,re.I):
+                        raise AccessError('Business report notes with active or external embedded resources must be removed before rendering.')
         if name=='authorize_upload' and (type(args.get('size',0))is not int or not 0<=args.get('size',0)<=MAX_FILE_BYTES):
             raise AccessError('Upload size exceeds five MiB.')
         if name=='upload_file':
