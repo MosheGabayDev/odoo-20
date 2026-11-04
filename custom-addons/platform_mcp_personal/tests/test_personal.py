@@ -98,11 +98,10 @@ class TestPersonalMCP(TransactionCase):
         own=tasks.create(dict(name='Synthetic own native private task',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)]))
         other=tasks.create(dict(name='Synthetic other native private task',project_id=False,company_id=False,user_ids=[fields.Command.set(self.two.ids)]))
         unsafe=tasks.create(dict(name='Synthetic private foreign relation',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)],partner_id=self.other.id))
-        child=tasks.create(dict(name='Synthetic private foreign parent',project_id=False,company_id=False,user_ids=[fields.Command.set(self.one.ids)],parent_id=other.id))
         self.assertEqual(self.data('read_records',{'model':'project.task','ids':own.ids,'fields':['id','name']})[0]['id'],own.id)
         self.data('update_records',{'model':'project.task','ids':own.ids,'values':{'priority':'1'}})
         self.assertEqual(own.priority,'1')
-        for denied in (other,unsafe,child):
+        for denied in (other,unsafe,self.foreign_task):
             self.assertTrue(self.call('read_records',{'model':'project.task','ids':denied.ids,'fields':['id','name']})['isError'])
 
     def test_business_crud_works_for_selected_personal_identity(self):
@@ -156,9 +155,17 @@ class TestPersonalMCP(TransactionCase):
     def test_clone_neutralization_clears_inline_personal_delivery_and_authority(self):
         from odoo.tools import file_open
         self.assertFalse(self.key._fields['personal_delivery_ciphertext'].attachment)
-        self.key.sudo().write({'personal_delivery_ciphertext':b'Y2lwaGVydGV4dA=='})
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding,rsa
+        from ..controllers import encrypted_delivery
+        transport=rsa.generate_private_key(public_exponent=65537,key_size=3072)
+        self.key.sudo().write({'personal_delivery_ciphertext':encrypted_delivery(transport.public_key(),'k'*43)})
         # CLI neutralization sees committed storage, not pending ORM writes.
         self.env.flush_all()
+        self.key.invalidate_recordset()
+        cipher=base64.b64decode(self.key.sudo().personal_delivery_ciphertext.to_base64())
+        self.assertEqual(transport.decrypt(cipher,padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None)),b'k'*43)
+        with self.assertRaises(AccessError):self.key.sudo().write({'personal_delivery_ciphertext':encrypted_delivery(transport.public_key(),'j'*43)})
         with file_open('platform_mcp_personal/data/neutralize.sql') as source:
             self.env.cr.execute(source.read())
         self.key.invalidate_recordset()

@@ -110,11 +110,7 @@ class Users(models.Model):
             # Native personal tasks (including Welcome) intentionally have no
             # company/project. Admit only this actor's assigned private tasks;
             # keep the same reference/privacy boundaries as business tasks.
-            own=Domain([('company_id','=',False),('project_id','=',False),('user_ids','in',[self.id])])
-            parent=Domain('parent_id','=',False) | Domain([
-                ('parent_id.company_id','in',[False,company]),('parent_id.project_id','=',False),('parent_id.user_ids','in',[self.id])]) | Domain([
-                ('parent_id.company_id','=',company),('parent_id.project_id','access','read')])
-            own &= parent
+            own=Domain([('company_id','=',False),('project_id','=',False),('parent_id','=',False),('user_ids','in',[self.id])])
             for name in READ[model]:
                 field=self.env[model]._fields.get(name)
                 if field and field.type=='many2one' and field.comodel_name in READ and field.comodel_name not in (model,'res.users'):

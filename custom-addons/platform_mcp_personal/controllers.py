@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import padding,rsa
 from odoo import fields,http
 from odoo.exceptions import AccessDenied,AccessError,ValidationError
 from odoo.http import request,Response
+from odoo.tools.binary import BinaryBytes
 from werkzeug.exceptions import NotFound
 from odoo.addons.platform_bridge.models.bridge import ORIGIN,CLIENT,TOKEN
 from odoo.addons.muk_mcp.controllers.transfer import MCPTransferController
@@ -14,6 +15,11 @@ from odoo.addons.platform_mcp_organization.policy import READ,WRITE
 from .models import PURPOSE
 
 CALLBACK='https://odoo.test.ai-data-platform.com/platform/mcp/signin'
+
+
+def encrypted_delivery(public,raw):
+    cipher=public.encrypt(raw.encode(),padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+    return BinaryBytes(cipher)
 
 
 def denied():
@@ -66,8 +72,7 @@ class PersonalConsent(http.Controller):
             key,raw=request.env['muk_mcp.key'].with_user(user)._generate('Codex personal continuous business access','write',120)
             public=serialization.load_pem_public_key(cfg.personal_transport_public_pem.encode())
             if not isinstance(public,rsa.RSAPublicKey) or public.key_size<3072:raise AccessDenied()
-            cipher=public.encrypt(raw.encode(),padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
-            key.sudo().write({'personal_delivery_ciphertext':base64.b64encode(cipher)})
+            key.sudo().write({'personal_delivery_ciphertext':encrypted_delivery(public,raw)})
             request.env['muk_mcp.key'].sudo().with_context(active_test=False).search([('id','!=',key.id),('active','=',True)]).write({'active':False})
             cfg._monitor_security();request.env.cr.commit()
         except Exception:
