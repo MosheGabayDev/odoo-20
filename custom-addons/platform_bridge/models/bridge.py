@@ -162,6 +162,10 @@ class Config(models.Model):
             pe_owner_id=user.id,pe_first_name=identity['first_name'],pe_last_name=identity['last_name']))
         user.write({'pe_profile_base':dict(first_name=identity['first_name'],last_name=identity['last_name'],
             email=identity['email'],phone='',mobile_phone='',company='')})
+        # Stored related avatar fields are deferred until flush. Finish those
+        # computations in the same trusted uid before the anonymous HTTP
+        # transaction commits; otherwise attachment checks see an empty user.
+        users.env.flush_all()
         return user
 
 

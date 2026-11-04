@@ -94,6 +94,9 @@ env.cr.commit()
                 parts=[]
                 error=controller.path(restored)/'last-command-error.log'
                 if error.exists():parts.append(error.read_text(errors='replace'))
+                for operation in ('neutralize','install','upgrade','test'):
+                    log=controller.path(restored)/(operation+'.log')
+                    if log.exists():parts.append(log.read_text(errors='replace')[-18000:])
                 try:parts.append(controller.dc(restored,'logs','--tail','100','app'))
                 except Exception:pass
                 diagnostic='\n'.join(parts)

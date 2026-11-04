@@ -136,6 +136,9 @@ class TestBridge(TransactionCase):
         self.assertFalse(user.has_group('base.group_system'))
         self.assertFalse(user.has_group('base.group_erp_manager'))
         self.assertTrue(user.partner_id.image_1920)
+        # Match callback commit: flush the entire transaction from auth=none,
+        # including deferred stored related image attachments.
+        anonymous.flush_all()
         again=anonymous['pe.bridge.config']._provision(identity,'j'*43)
         self.assertEqual(again,user)
 
