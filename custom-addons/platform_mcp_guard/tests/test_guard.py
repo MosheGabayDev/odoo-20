@@ -15,7 +15,9 @@ class TestMCPGuard(TransactionCase):
         super().setUpClass()
         quiet=dict(tracking_disable=True,mail_create_nolog=True,mail_create_nosubscribe=True,mail_auto_subscribe_no_notify=True,no_reset_password=True)
         cls.config=cls.env.ref('platform_mcp_guard.main')
-        cls.config.write({'enabled':False})
+        reset={'enabled':False}
+        if 'access_mode' in cls.config._fields:reset.update(access_mode='pilot',continuous=False)
+        cls.config.write(reset)
         cls.reader=cls.env['res.users'].sudo().with_context(**quiet).create(dict(name='Synthetic MCP reader',login='mcp-guard-fixture-reader',
             group_ids=[fields.Command.set([cls.env.ref('base.group_user').id,cls.env.ref('platform_mcp_guard.group_reader').id])],
             company_id=cls.env.company.id,company_ids=[fields.Command.set(cls.env.company.ids)]))
